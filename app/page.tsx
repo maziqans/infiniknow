@@ -1,17 +1,24 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { PortalHeader } from "@/components/portal-header"
 import { PortalSidebar } from "@/components/portal-sidebar"
 import { DashboardContent } from "@/components/dashboard-content"
 import { PoliciesContent } from "@/components/policies-content"
-import { CompanyStructureContent } from "@/components/company-structure-content"
 import { FacilitiesContent } from "@/components/facilities-content"
 import { ProfileContent } from "@/components/profile-content"
 import { OnboardingContent } from "@/components/onboarding-content"
 import { TemplatesContent } from "@/components/templates-content"
 import { GuidelinesContent } from "@/components/guidelines-content"
 import { PortalFooter } from "@/components/portal-footer"
+
+// Dynamically import components that use non-SSR safe libraries (like react-organizational-chart)
+// This guarantees they are only evaluated and loaded in the browser.
+const CompanyStructureContent = dynamic(
+  () => import("@/components/company-structure-content").then((mod) => mod.CompanyStructureContent),
+  { ssr: false }
+)
 
 export default function InfiniKnowPortal() {
   const [activeItem, setActiveItem] = useState("home")
