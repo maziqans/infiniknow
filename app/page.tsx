@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { PortalHeader } from "@/components/portal-header"
 import { PortalSidebar } from "@/components/portal-sidebar"
 import { DashboardContent } from "@/components/dashboard-content"
@@ -15,6 +15,11 @@ import { PortalFooter } from "@/components/portal-footer"
 
 export default function InfiniKnowPortal() {
   const [activeItem, setActiveItem] = useState("home")
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const handleItemClick = (id: string) => {
     setActiveItem(id)
@@ -51,6 +56,11 @@ export default function InfiniKnowPortal() {
       default:
         return <DashboardContent />
     }
+  }
+
+  // Prevent rendering DOM-dependent child components on the server
+  if (!isMounted) {
+    return null // Optionally, you can return a loading spinner or skeleton here
   }
 
   return (
