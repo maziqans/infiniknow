@@ -60,7 +60,7 @@ export function PortalHeader({ user, onNavigate, onLogout }: PortalHeaderProps) 
           <div className="hidden lg:flex items-center gap-2 bg-red/10 border border-red/20 rounded-lg px-4 py-2">
             <Shield className="h-4 w-4 text-red" />
             <span className="text-xs font-semibold text-red uppercase tracking-wide">
-              Access: Internal Staff Extranet Only
+              Access: Internal Staff Only
             </span>
           </div>
 
