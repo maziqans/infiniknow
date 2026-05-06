@@ -22,12 +22,41 @@ const CompanyStructureContent = dynamic(
   { ssr: false }
 )
 
+interface UserProfile {
+  name: string
+  email: string
+  ic: string
+  personalEmail: string
+  position: string
+  address: string
+  phoneNo: string
+  department: string
+}
+
+const mockDatabase = [
+  {
+    email: "ammar@infinicore.com.my",
+    password: "123pass",
+    profile: {
+      name: "Ammar Haziq Bin Annas",
+      email: "ammar@infinicore.com.my",
+      ic: "012345-67-8910",
+      personalEmail: "ammar@gmail.com",
+      position: "Chief Technology Officer",
+      address: "No. 1 Jalan kampung, sekyen 67, Shah Alam, 40000, Selangor, Malaysia",
+      phoneNo: "0123456789",
+      department: "Technical",
+    },
+  },
+]
+
 export default function InfiniKnowPortal() {
   const [activeItem, setActiveItem] = useState("home")
   const [isMounted, setIsMounted] = useState(false)
-  const [user, setUser] = useState<{ name: string } | null>(null)
-  const [username, setUsername] = useState("")
+  const [user, setUser] = useState<UserProfile | null>(null)
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [loginError, setLoginError] = useState("")
 
   useEffect(() => {
     setIsMounted(true)
@@ -46,18 +75,25 @@ export default function InfiniKnowPortal() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    if (username.trim()) {
-      const loggedInUser = { name: username }
-      setUser(loggedInUser)
-      localStorage.setItem("portal_user", JSON.stringify(loggedInUser))
+    
+    const foundUser = mockDatabase.find(
+      (u) => u.email === email && u.password === password
+    )
+
+    if (foundUser) {
+      setUser(foundUser.profile)
+      localStorage.setItem("portal_user", JSON.stringify(foundUser.profile))
       setActiveItem("home")
+      setLoginError("")
+    } else {
+      setLoginError("Invalid email or password")
     }
   }
 
   const renderContent = () => {
     switch (activeItem) {
       case "profile":
-        return <ProfileContent onBack={goHome} />
+        return <ProfileContent user={user} onBack={goHome} />
       case "onboarding":
         return <OnboardingContent onBack={goHome} />
       case "policies":
@@ -106,14 +142,14 @@ export default function InfiniKnowPortal() {
           <CardContent className="pt-6">
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Username</label>
+                <label className="text-sm font-medium text-foreground">Email</label>
                 <input 
-                  type="text" 
+                  type="email" 
                   required
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-red focus:border-transparent" 
-                  placeholder="Enter any username" 
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter your email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -122,11 +158,14 @@ export default function InfiniKnowPortal() {
                   type="password" 
                   required
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-red focus:border-transparent" 
-                  placeholder="Enter any password" 
+                  placeholder="Enter your password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+              {loginError && (
+                <p className="text-sm text-red font-medium">{loginError}</p>
+              )}
               <Button type="submit" className="w-full bg-red hover:bg-red/90 text-white mt-2">
                 Sign In
               </Button>

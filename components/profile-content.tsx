@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   User,
   Mail,
@@ -19,14 +19,42 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
+interface UserProfile {
+  name: string
+  email: string
+  ic: string
+  personalEmail: string
+  position: string
+  address: string
+  phoneNo: string
+  department: string
+}
+
 interface ProfileContentProps {
+  user: UserProfile | null
   onBack: () => void
 }
 
-export function ProfileContent({ onBack }: ProfileContentProps) {
+export function ProfileContent({ user, onBack }: ProfileContentProps) {
+  const displayUser = user || {
+    name: "Alex Smith",
+    position: "Senior Analyst",
+    department: "Cybersecurity Division",
+    email: "alex.smith@infinicore.com.my",
+    ic: "******-**-5678",
+    personalEmail: "alex.smith.personal@gmail.com",
+    address: "123 Main Street, Apt 4B, Kuala Lumpur, 50450",
+    phoneNo: "+60 12-345 6789"
+  }
+
   const [isEditing, setIsEditing] = useState(false)
-  const [personalEmail, setPersonalEmail] = useState("alex.smith.personal@gmail.com")
-  const [homeAddress, setHomeAddress] = useState("123 Main Street, Apt 4B, Kuala Lumpur, 50450")
+  const [personalEmail, setPersonalEmail] = useState(displayUser.personalEmail)
+  const [homeAddress, setHomeAddress] = useState(displayUser.address)
+
+  useEffect(() => {
+    setPersonalEmail(displayUser.personalEmail)
+    setHomeAddress(displayUser.address)
+  }, [displayUser.personalEmail, displayUser.address])
 
   const handleSave = () => {
     setIsEditing(false)
@@ -79,12 +107,12 @@ export function ProfileContent({ onBack }: ProfileContentProps) {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center">
               <Avatar className="h-24 w-24 mb-4 border-4 border-red/20">
-                <AvatarImage src="/placeholder-user.jpg" alt="Alex Smith" />
-                <AvatarFallback className="bg-red text-white text-2xl font-bold">AS</AvatarFallback>
+                <AvatarImage src="/placeholder-user.jpg" alt={displayUser.name} />
+                <AvatarFallback className="bg-red text-white text-2xl font-bold">{displayUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
-              <h2 className="text-xl font-bold text-foreground">Alex Smith</h2>
-              <p className="text-red font-medium">Senior Analyst</p>
-              <p className="text-sm text-muted-foreground mt-1">Cybersecurity Division</p>
+              <h2 className="text-xl font-bold text-foreground">{displayUser.name}</h2>
+              <p className="text-red font-medium">{displayUser.position}</p>
+              <p className="text-sm text-muted-foreground mt-1">{displayUser.department}</p>
               
               <div className="w-full mt-6 pt-6 border-t border-border">
                 <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -117,7 +145,7 @@ export function ProfileContent({ onBack }: ProfileContentProps) {
                     <Lock className="h-3 w-3 text-muted-foreground/50" />
                   </Label>
                   <div className="p-3 rounded-lg bg-secondary/50 text-foreground font-medium">
-                    Alex Smith
+                    {displayUser.name}
                   </div>
                 </div>
 
@@ -139,7 +167,7 @@ export function ProfileContent({ onBack }: ProfileContentProps) {
                     <Lock className="h-3 w-3 text-muted-foreground/50" />
                   </Label>
                   <div className="p-3 rounded-lg bg-secondary/50 text-foreground font-medium">
-                    alex.smith@infinicore.com.my
+                    {displayUser.email}
                   </div>
                 </div>
 
@@ -150,7 +178,7 @@ export function ProfileContent({ onBack }: ProfileContentProps) {
                     <Lock className="h-3 w-3 text-muted-foreground/50" />
                   </Label>
                   <div className="p-3 rounded-lg bg-secondary/50 text-foreground font-medium">
-                    Senior Analyst
+                    {displayUser.position}
                   </div>
                 </div>
 
@@ -161,7 +189,7 @@ export function ProfileContent({ onBack }: ProfileContentProps) {
                     <Lock className="h-3 w-3 text-muted-foreground/50" />
                   </Label>
                   <div className="p-3 rounded-lg bg-secondary/50 text-foreground font-medium">
-                    ******-**-5678
+                    {displayUser.ic}
                   </div>
                 </div>
               </div>
