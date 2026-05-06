@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
+import Image from "next/image"
 import { PortalHeader } from "@/components/portal-header"
 import { PortalSidebar } from "@/components/portal-sidebar"
 import { DashboardContent } from "@/components/dashboard-content"
@@ -165,8 +166,14 @@ export default function InfiniKnowPortal() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4 animate-in fade-in duration-500">
         <Card className="w-full max-w-md border-0 card-elevated shadow-xl">
           <CardHeader className="text-center pb-2">
-            <div className="mx-auto w-12 h-12 bg-red/10 rounded-xl flex items-center justify-center mb-4">
-              <span className="font-bold text-red text-xl">IK</span>
+            <div className="mx-auto flex items-center justify-center mb-4">
+              <Image 
+                src="/infinicorelogo.png" 
+                alt="Infinicore Logo" 
+                width={80} 
+                height={80} 
+                className="h-16 w-auto object-contain" 
+              />
             </div>
             <CardTitle className="text-2xl font-bold text-navy">Welcome to InfiniKnow</CardTitle>
             <p className="text-sm text-muted-foreground mt-2">Enter your credentials to access the portal</p>

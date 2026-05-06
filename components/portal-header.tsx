@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Search, Shield, LogOut, User, ChevronDown } from "lucide-react"
+import Image from "next/image"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -12,7 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { InfiniKnowLogo } from "./infiniknow-logo"
 
 interface PortalHeaderProps {
   user?: { name: string; position: string } | null
@@ -29,7 +29,13 @@ export function PortalHeader({ user, onNavigate, onLogout }: PortalHeaderProps) 
       <div className="relative z-10 flex items-center justify-between px-6 py-4">
         {/* Left - Logo and Title */}
         <div className="flex items-center gap-4">
-          <InfiniKnowLogo className="h-10 w-16" />
+          <Image 
+            src="/infinicorelogo.png" 
+            alt="Infinicore Logo" 
+            width={64} 
+            height={40} 
+            className="h-10 w-auto object-contain" 
+          />
           <div className="flex flex-col">
             <span className="text-xl font-bold text-white tracking-wide">INFINIKNOW</span>
             <span className="text-xs text-white/70 tracking-widest uppercase">Internal Portal</span>
