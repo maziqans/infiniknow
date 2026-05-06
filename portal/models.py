@@ -60,3 +60,20 @@ class PolicyDocument(models.Model):
 
     def __str__(self):
         return self.title
+
+class TemplateDocument(models.Model):
+    TEMPLATE_TYPES = [
+        ('word', 'Word Document'),
+        ('excel', 'Excel Spreadsheet'),
+        ('ppt', 'PowerPoint Presentation'),
+    ]
+    
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    template_type = models.CharField(max_length=10, choices=TEMPLATE_TYPES)
+    file = models.FileField(upload_to='templates/', blank=True, null=True)
+    is_new = models.BooleanField(default=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"[{self.get_template_type_display()}] {self.title}"

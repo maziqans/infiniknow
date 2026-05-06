@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import UserProfile, Announcement, OnboardingItem, RecentActivity, PolicyDocument
+from .models import UserProfile, Announcement, OnboardingItem, RecentActivity, PolicyDocument, TemplateDocument
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,4 +33,9 @@ class RecentActivitySerializer(serializers.ModelSerializer):
 class PolicyDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PolicyDocument
+        fields = '__all__'
+
+class TemplateDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TemplateDocument
         fields = '__all__'

@@ -1,8 +1,8 @@
 from rest_framework import viewsets, views
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import UserProfile, Announcement, OnboardingItem, RecentActivity, PolicyDocument
-from .serializers import UserProfileSerializer, AnnouncementSerializer, OnboardingItemSerializer, RecentActivitySerializer, PolicyDocumentSerializer
+from .models import UserProfile, Announcement, OnboardingItem, RecentActivity, PolicyDocument, TemplateDocument
+from .serializers import UserProfileSerializer, AnnouncementSerializer, OnboardingItemSerializer, RecentActivitySerializer, PolicyDocumentSerializer, TemplateDocumentSerializer
 
 class CurrentUserProfileView(views.APIView):
     permission_classes = [IsAuthenticated]
@@ -40,3 +40,13 @@ class RecentActivityViewSet(viewsets.ModelViewSet):
 class PolicyDocumentViewSet(viewsets.ModelViewSet):
     queryset = PolicyDocument.objects.all().order_by('-uploaded_at')
     serializer_class = PolicyDocumentSerializer
+
+class TemplateDocumentViewSet(viewsets.ModelViewSet):
+    serializer_class = TemplateDocumentSerializer
+
+    def get_queryset(self):
+        queryset = TemplateDocument.objects.all().order_by('-uploaded_at')
+        template_type = self.request.query_params.get('type')
+        if template_type:
+            queryset = queryset.filter(template_type=template_type)
+        return queryset

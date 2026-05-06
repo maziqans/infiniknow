@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Announcement, OnboardingItem, RecentActivity, PolicyDocument
+from .models import UserProfile, Announcement, OnboardingItem, RecentActivity, PolicyDocument, TemplateDocument
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
@@ -25,3 +25,8 @@ class RecentActivityAdmin(admin.ModelAdmin):
 class PolicyDocumentAdmin(admin.ModelAdmin):
     list_display = ('title', 'version', 'is_new', 'uploaded_at')
     list_filter = ('is_new', 'uploaded_at')
+
+@admin.register(TemplateDocument)
+class TemplateDocumentAdmin(admin.ModelAdmin):
+    list_display = ('title', 'template_type', 'is_new', 'uploaded_at')
+    list_filter = ('template_type', 'is_new', 'uploaded_at')
