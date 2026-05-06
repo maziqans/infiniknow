@@ -67,7 +67,8 @@ export default function InfiniKnowPortal() {
 
   // Prevent rendering DOM-dependent child components on the server
   if (!isMounted) {
-    return null // Optionally, you can return a loading spinner or skeleton here
+    // Return a blank background that matches your theme to prevent a flash of unstyled content
+    return <div className="min-h-screen bg-background flex flex-col"></div>
   }
 
   return (
