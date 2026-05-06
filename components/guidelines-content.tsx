@@ -341,7 +341,7 @@ export function GuidelinesContent({ guidelineType, onBack }: GuidelinesContentPr
 
   if (selectedArticle) {
     return (
-      <main className="flex-1 bg-background p-6 overflow-y-auto">
+      <main key={`article-${selectedArticle.id}`} className="flex-1 bg-background p-6 overflow-y-auto animate-in fade-in duration-500">
         {/* Article Header */}
         <div className="mb-6">
           <Button
@@ -424,7 +424,7 @@ export function GuidelinesContent({ guidelineType, onBack }: GuidelinesContentPr
   }
 
   return (
-    <main className="flex-1 bg-background p-6 overflow-y-auto">
+    <main key="guideline-list" className="flex-1 bg-background p-6 overflow-y-auto animate-in fade-in duration-500">
       {/* Header */}
       <div className="mb-6">
         <Button

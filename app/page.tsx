@@ -135,7 +135,7 @@ export default function InfiniKnowPortal() {
   // Render Login Screen if not authenticated
   if (!user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 animate-in fade-in duration-500">
         <Card className="w-full max-w-md border-0 card-elevated shadow-xl">
           <CardHeader className="text-center pb-2">
             <div className="mx-auto w-12 h-12 bg-red/10 rounded-xl flex items-center justify-center mb-4">
@@ -182,11 +182,13 @@ export default function InfiniKnowPortal() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col animate-in fade-in duration-500">
       <PortalHeader user={user} onNavigate={handleItemClick} onLogout={handleLogout} />
       <div className="flex flex-1">
         <PortalSidebar activeItem={activeItem} onItemClick={handleItemClick} />
-        {renderContent()}
+        <div key={activeItem} className="flex-1 flex flex-col animate-in fade-in duration-500">
+          {renderContent()}
+        </div>
       </div>
       <PortalFooter />
     </div>
