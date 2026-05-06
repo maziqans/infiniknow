@@ -13,6 +13,7 @@ import { OnboardingContent } from "@/components/onboarding-content"
 import { TemplatesContent } from "@/components/templates-content"
 import { GuidelinesContent } from "@/components/guidelines-content"
 import { AnnouncementsContent } from "@/components/announcements-content"
+import { FavoritesContent } from "@/components/favorites-content"
 import { PortalFooter } from "@/components/portal-footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -210,6 +211,8 @@ export default function InfiniKnowPortal() {
         return <GuidelinesContent guidelineType="security" onBack={goHome} />
       case "code":
         return <GuidelinesContent guidelineType="code" onBack={goHome} />
+      case "favorites":
+        return <FavoritesContent onNavigate={handleItemClick} onBack={goHome} />
       case "facilities":
         return <FacilitiesContent onBack={goHome} />
       case "announcements":
@@ -217,6 +220,7 @@ export default function InfiniKnowPortal() {
           <AnnouncementsContent 
             userPosition={user?.position}
             userDepartment={user?.department}
+            userEmail={user?.email}
             initialSelectedId={selectedAnnouncementId}
             onClearSelection={() => setSelectedAnnouncementId(null)}
             onBack={goHome}

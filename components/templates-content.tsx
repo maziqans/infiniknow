@@ -81,7 +81,7 @@ export function TemplatesContent({ templateType, onBack }: TemplatesContentProps
           title: template.title,
           item_type: `template_${templateType}`,
           item_id: template.id.toString(),
-          file_url: template.file || ""
+          file_url: template.file || null
         })
       })
       if (res.ok) setFavorites([await res.json(), ...favorites])
@@ -174,7 +174,7 @@ export function TemplatesContent({ templateType, onBack }: TemplatesContentProps
                   </div>
                 </div>
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button size="sm" variant="ghost" className="h-9 w-9 p-0" onClick={() => toggleFavorite(template)}>
+                  <Button size="sm" variant="ghost" className="h-9 w-9 p-0" onClick={(e) => { e.stopPropagation(); toggleFavorite(template) }}>
                     <Star className={`h-4 w-4 ${favorites.some(f => f.item_id === template.id.toString() && f.item_type === `template_${templateType}`) ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground hover:text-amber-500'}`} />
                   </Button>
                   {template.file && (

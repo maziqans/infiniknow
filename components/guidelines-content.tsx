@@ -433,7 +433,7 @@ export function GuidelinesContent({ guidelineType, onBack }: GuidelinesContentPr
           title: article.title,
           item_type: `guideline_${guidelineType}`,
           item_id: article.id,
-          file_url: ""
+          file_url: null
         })
       })
       if (res.ok) setFavorites([await res.json(), ...favorites])
@@ -462,7 +462,7 @@ export function GuidelinesContent({ guidelineType, onBack }: GuidelinesContentPr
             <div className="mb-8">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <h1 className="text-3xl font-bold text-foreground">{selectedArticle.title}</h1>
-                <Button size="sm" variant="ghost" onClick={() => toggleFavorite(selectedArticle)} className="shrink-0">
+                <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); toggleFavorite(selectedArticle) }} className="shrink-0">
                   <Star className={`h-5 w-5 ${favorites.some(f => f.item_id === selectedArticle.id && f.item_type === `guideline_${guidelineType}`) ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground hover:text-amber-500'}`} />
                   <span className="ml-2">Favorite</span>
                 </Button>

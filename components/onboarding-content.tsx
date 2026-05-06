@@ -85,7 +85,7 @@ export function OnboardingContent({ userPosition, userDepartment, onBack }: Onbo
           title: item.title,
           item_type: 'onboarding',
           item_id: item.id.toString(),
-          file_url: typeof item.file === 'string' ? item.file : ""
+          file_url: typeof item.file === 'string' ? item.file : null
         })
       })
       if (res.ok) setFavorites([await res.json(), ...favorites])
@@ -169,7 +169,7 @@ export function OnboardingContent({ userPosition, userDepartment, onBack }: Onbo
                       </div>
                       <p className="text-xs text-muted-foreground">Document available</p>
                     </div>
-                    <Button size="sm" variant="ghost" className="h-9 w-9 p-0" onClick={() => toggleFavorite(item)}>
+                    <Button size="sm" variant="ghost" className="h-9 w-9 p-0" onClick={(e) => { e.stopPropagation(); toggleFavorite(item) }}>
                       <Star className={`h-4 w-4 ${favorites.some(f => f.item_id === item.id.toString() && f.item_type === 'onboarding') ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground hover:text-amber-500'}`} />
                     </Button>
                     <>
@@ -191,7 +191,7 @@ export function OnboardingContent({ userPosition, userDepartment, onBack }: Onbo
                 ) : (
                   <div className="flex items-center gap-3">
                     <Badge variant="secondary">Not Uploaded</Badge>
-                    <Button size="sm" variant="ghost" className="h-9 w-9 p-0" onClick={() => toggleFavorite(item)}>
+                    <Button size="sm" variant="ghost" className="h-9 w-9 p-0" onClick={(e) => { e.stopPropagation(); toggleFavorite(item) }}>
                       <Star className={`h-4 w-4 ${favorites.some(f => f.item_id === item.id.toString() && f.item_type === 'onboarding') ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground hover:text-amber-500'}`} />
                     </Button>
                     {canManageOnboarding && (

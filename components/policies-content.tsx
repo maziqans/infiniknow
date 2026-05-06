@@ -73,7 +73,7 @@ export function PoliciesContent({ onBack }: PoliciesContentProps) {
           title: policy.title,
           item_type: 'policy',
           item_id: policy.id.toString(),
-          file_url: policy.file || ""
+          file_url: policy.file || null
         })
       })
       if (res.ok) setFavorites([await res.json(), ...favorites])
@@ -169,7 +169,7 @@ export function PoliciesContent({ onBack }: PoliciesContentProps) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button size="sm" variant="ghost" className="h-9 w-9 p-0" onClick={() => toggleFavorite(policy)}>
+                  <Button size="sm" variant="ghost" className="h-9 w-9 p-0" onClick={(e) => { e.stopPropagation(); toggleFavorite(policy) }}>
                     <Star className={`h-4 w-4 ${favorites.some(f => f.item_id === policy.id.toString() && f.item_type === 'policy') ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground hover:text-amber-500'}`} />
                   </Button>
                   {policy.file && (

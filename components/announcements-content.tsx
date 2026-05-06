@@ -18,6 +18,7 @@ interface Announcement {
 interface AnnouncementsContentProps {
   userPosition?: string
   userDepartment?: string
+  userEmail?: string
   initialSelectedId?: string | null
   onClearSelection?: () => void
   onBack: () => void
@@ -26,12 +27,14 @@ interface AnnouncementsContentProps {
 export function AnnouncementsContent({
   userPosition,
   userDepartment,
+  userEmail,
   initialSelectedId,
   onClearSelection,
   onBack,
 }: AnnouncementsContentProps) {
   const [announcementsList, setAnnouncementsList] = useState<Announcement[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId || null)
+  const [readAnnouncements, setReadAnnouncements] = useState<string[]>([])
   const [isAdding, setIsAdding] = useState(false)
   const [newTitle, setNewTitle] = useState("")
   const [newContent, setNewContent] = useState("")
@@ -64,6 +67,25 @@ export function AnnouncementsContent({
       setSelectedId(initialSelectedId)
     }
   }, [initialSelectedId])
+
+  // Load read history from local storage
+  useEffect(() => {
+    if (userEmail) {
+      const stored = localStorage.getItem(`read_announcements_${userEmail}`)
+      if (stored) {
+        setReadAnnouncements(JSON.parse(stored))
+      }
+    }
+  }, [userEmail])
+
+  // Automatically mark an announcement as read when it is opened
+  useEffect(() => {
+    if (selectedId && userEmail && !readAnnouncements.includes(selectedId.toString())) {
+      const updated = [...readAnnouncements, selectedId.toString()]
+      setReadAnnouncements(updated)
+      localStorage.setItem(`read_announcements_${userEmail}`, JSON.stringify(updated))
+    }
+  }, [selectedId, userEmail, readAnnouncements])
 
   const handleAddAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -131,7 +153,7 @@ export function AnnouncementsContent({
           <CardContent className="pt-8 pb-12 px-8">
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-4">
-                {selectedAnnouncement.is_new && <Badge className="bg-red text-white">New</Badge>}
+                {selectedAnnouncement.is_new && !readAnnouncements.includes(selectedAnnouncement.id.toString()) && <Badge className="bg-red text-white">New</Badge>}
               </div>
               <h1 className="text-3xl font-bold text-foreground mb-4">{selectedAnnouncement.title}</h1>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -211,7 +233,7 @@ export function AnnouncementsContent({
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-lg font-semibold text-foreground group-hover:text-red transition-colors">{item.title}</h3>
-                      {item.is_new && <Badge className="bg-red text-white text-xs px-2 py-0.5">New</Badge>}
+                      {item.is_new && !readAnnouncements.includes(item.id.toString()) && <Badge className="bg-red text-white text-xs px-2 py-0.5">New</Badge>}
                     </div>
                     <p className="text-muted-foreground mb-3 line-clamp-2">{item.preview}</p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">

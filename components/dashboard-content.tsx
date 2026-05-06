@@ -55,27 +55,7 @@ function getTimeAgo(dateString?: string) {
 
 export function DashboardContent({ userName = "Alex Smith", userEmail, userPosition, userDepartment, onNavigate, onAnnouncementClick }: DashboardProps) {
   const [recentDocs, setRecentDocs] = useState<RecentDoc[]>([])
-  const [favorites, setFavorites] = useState<any[]>([])
-  const [viewDocument, setViewDocument] = useState<{title: string, url: string} | null>(null)
-
-  useEffect(() => {
-    const fetchFavorites = async () => {
-      const token = sessionStorage.getItem("auth_token")
-      if (token) {
-        try {
-          const response = await fetch("http://localhost:8000/api/favorites/", {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
-          if (response.ok) {
-            setFavorites(await response.json())
-          }
-        } catch (error) {
-          console.error("Failed to fetch favorites:", error)
-        }
-      }
-    }
-    fetchFavorites()
-  }, [])
+  const [readAnnouncements, setReadAnnouncements] = useState<string[]>([])
 
   useEffect(() => {
     const fetchRecentActivities = async () => {
@@ -100,6 +80,15 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
     }
     fetchRecentActivities()
   }, [])
+
+  useEffect(() => {
+    if (userEmail) {
+      const stored = localStorage.getItem(`read_announcements_${userEmail}`)
+      if (stored) {
+        setReadAnnouncements(JSON.parse(stored))
+      }
+    }
+  }, [userEmail])
 
   const [announcementsList, setAnnouncementsList] = useState<Announcement[]>([])
   const [isAdding, setIsAdding] = useState(false)
@@ -194,7 +183,7 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
               </div>
               <div className="hidden lg:flex items-center gap-6">
                 <div className="text-center px-6 py-4 bg-white/80 backdrop-blur-sm rounded-lg shadow-sm border border-white/50">
-                  <p className="text-3xl font-bold text-red">{announcementsList.filter(a => a.is_new).length}</p>
+                  <p className="text-3xl font-bold text-red">{announcementsList.filter(a => a.is_new && !readAnnouncements.includes(a.id.toString())).length}</p>
                   <p className="text-xs text-muted-foreground font-medium">New Announcements</p>
                 </div>
                 <div className="text-center px-6 py-4 bg-white/80 backdrop-blur-sm rounded-lg shadow-sm border border-white/50">
@@ -207,62 +196,30 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
         </Card>
       </div>
 
-      {/* Favourites Grid */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-          <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
-          Favourites
-        </h2>
-        {favorites.length === 0 ? (
-          <Card className="border-0 card-elevated">
-            <CardContent className="p-6 text-center text-muted-foreground">
-              No favourites added yet. Star items across the portal to see them here.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {favorites.map((fav) => (
-              <Card 
-                key={fav.id} 
-                className="border-0 card-elevated cursor-pointer group"
-                onClick={() => {
-                  if (fav.item_type === 'policy') onNavigate?.('policies');
-                  else if (fav.item_type === 'template_word') onNavigate?.('word');
-                  else if (fav.item_type === 'template_excel') onNavigate?.('excel');
-                  else if (fav.item_type === 'template_ppt') onNavigate?.('ppt');
-                  else if (fav.item_type.startsWith('guideline_')) onNavigate?.(fav.item_type.replace('guideline_', ''));
-                  else if (fav.item_type === 'onboarding') onNavigate?.('onboarding');
-                }}
-              >
-                <CardContent className="p-4 flex flex-col justify-between h-full">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="p-2 bg-secondary rounded-lg shrink-0">
-                      <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-                    </div>
-                    {fav.file_url && (
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="h-8 w-8 p-0 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" 
-                        onClick={(e) => { e.stopPropagation(); setViewDocument({title: fav.title, url: fav.file_url}) }}
-                      >
-                        <Eye className="h-4 w-4 text-muted-foreground hover:text-red" />
-                      </Button>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground group-hover:text-red transition-colors line-clamp-1">
-                      {fav.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground uppercase mt-1">
-                      {fav.item_type.replace('_', ' ')}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+      {/* Quick Links Row */}
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="border-0 card-elevated cursor-pointer group" onClick={() => onNavigate?.("favorites")}>
+          <CardContent className="p-6 flex items-center gap-4">
+            <div className="p-3 bg-amber-100 rounded-lg group-hover:scale-110 transition-transform">
+              <Star className="h-6 w-6 text-amber-600 fill-amber-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground group-hover:text-red transition-colors">My Favourites</h3>
+              <p className="text-sm text-muted-foreground">View and access your saved documents and policies.</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 card-elevated cursor-pointer group" onClick={() => onNavigate?.("onboarding")}>
+          <CardContent className="p-6 flex items-center gap-4">
+            <div className="p-3 bg-red/10 rounded-lg group-hover:scale-110 transition-transform">
+              <FileText className="h-6 w-6 text-red" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground group-hover:text-red transition-colors">New Hire Onboarding</h3>
+              <p className="text-sm text-muted-foreground">Access essential employment documents.</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Content Row */}
@@ -331,7 +288,13 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
                 announcementsList.slice(0, 3).map((item) => (
                   <div
                     key={item.id}
-                    onClick={() => onAnnouncementClick?.(item.id)}
+                    onClick={() => {
+                      // Mark as read immediately when clicked
+                      const updatedRead = [...readAnnouncements, item.id.toString()]
+                      setReadAnnouncements(updatedRead)
+                      if (userEmail) localStorage.setItem(`read_announcements_${userEmail}`, JSON.stringify(updatedRead))
+                      onAnnouncementClick?.(item.id)
+                    }}
                     className="p-4 rounded-lg bg-secondary/40 hover:bg-secondary/70 transition-all duration-200 cursor-pointer group border-l-3 border-transparent hover:border-red"
                   >
                     <div className="flex items-start justify-between gap-4">
@@ -340,7 +303,7 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
                           <h4 className="font-semibold text-foreground group-hover:text-red transition-colors">
                             {item.title}
                           </h4>
-                        {item.is_new && (
+                        {item.is_new && !readAnnouncements.includes(item.id.toString()) && (
                             <Badge className="bg-red text-white text-xs px-1.5 py-0">New</Badge>
                           )}
                         </div>
@@ -409,20 +372,6 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
           </CardContent>
         </Card>
       </div>
-
-      {viewDocument && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-          <div className="bg-background border border-border w-full max-w-5xl h-[85vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-border bg-muted/30">
-              <h2 className="text-lg font-semibold text-foreground truncate pr-4">{viewDocument.title}</h2>
-              <Button variant="ghost" size="sm" onClick={() => setViewDocument(null)}>Close</Button>
-            </div>
-            <div className="flex-1 bg-white">
-              <iframe src={viewDocument.url} className="w-full h-full border-0" />
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   )
 }
