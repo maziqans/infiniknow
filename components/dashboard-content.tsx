@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import {
   FileText,
   Download,
@@ -38,12 +39,6 @@ const announcements = [
   },
 ]
 
-const recentDocuments = [
-  { title: "API Testing Checklist", viewedAt: "2 hours ago", type: "PDF" },
-  { title: "Employee Handbook 2026", viewedAt: "Yesterday", type: "PDF" },
-  { title: "WAPT Methodology Guide", viewedAt: "3 days ago", type: "DOC" },
-]
-
 interface QuickAccessCardProps {
   icon: React.ReactNode
   title: string
@@ -78,9 +73,45 @@ function QuickAccessCard({ icon, title, description, glowClass, onClick }: Quick
 
 interface DashboardProps {
   userName?: string
+  userEmail?: string
 }
 
-export function DashboardContent({ userName = "Alex Smith" }: DashboardProps) {
+interface RecentDoc {
+  title: string
+  viewedAt?: string
+  timestamp?: string
+  type: string
+}
+
+function getTimeAgo(dateString?: string) {
+  if (!dateString) return ""
+  const diff = Date.now() - new Date(dateString).getTime()
+  const minutes = Math.floor(diff / 60000)
+  if (minutes < 1) return "Just now"
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`
+  const days = Math.floor(hours / 24)
+  if (days === 1) return "Yesterday"
+  return `${days} days ago`
+}
+
+export function DashboardContent({ userName = "Alex Smith", userEmail }: DashboardProps) {
+  const [recentDocs, setRecentDocs] = useState<RecentDoc[]>([
+    { title: "API Testing Checklist", viewedAt: "2 hours ago", type: "PDF" },
+    { title: "Employee Handbook 2026", viewedAt: "Yesterday", type: "PDF" },
+    { title: "WAPT Methodology Guide", viewedAt: "3 days ago", type: "DOC" },
+  ])
+
+  useEffect(() => {
+    if (userEmail) {
+      const stored = localStorage.getItem(`recent_docs_${userEmail}`)
+      if (stored) {
+        setRecentDocs(JSON.parse(stored))
+      }
+    }
+  }, [userEmail])
+
   return (
     <main className="flex-1 bg-background p-6 overflow-y-auto">
       {/* Welcome Banner */}
@@ -211,7 +242,7 @@ export function DashboardContent({ userName = "Alex Smith" }: DashboardProps) {
           </CardHeader>
           <CardContent className="pt-0">
             <ul className="space-y-2">
-              {recentDocuments.map((doc, index) => (
+              {recentDocs.map((doc, index) => (
                 <li
                   key={index}
                   className="flex items-center justify-between p-3 rounded-lg bg-secondary/40 hover:bg-secondary/70 transition-all duration-200 cursor-pointer group"
@@ -224,7 +255,9 @@ export function DashboardContent({ userName = "Alex Smith" }: DashboardProps) {
                       <span className="text-sm font-medium text-foreground group-hover:text-red transition-colors">
                         {doc.title}
                       </span>
-                      <p className="text-xs text-muted-foreground">{doc.viewedAt}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {doc.timestamp ? getTimeAgo(doc.timestamp) : doc.viewedAt}
+                      </p>
                     </div>
                   </div>
                   <Button size="sm" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0">

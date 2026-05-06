@@ -122,7 +122,7 @@ export default function InfiniKnowPortal() {
       case "facilities":
         return <FacilitiesContent onBack={goHome} />
       default:
-        return <DashboardContent userName={user?.name} />
+        return <DashboardContent userName={user?.name} userEmail={user?.email} />
     }
   }
 

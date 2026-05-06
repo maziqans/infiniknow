@@ -310,6 +310,35 @@ export function GuidelinesContent({ guidelineType, onBack }: GuidelinesContentPr
   const [selectedArticle, setSelectedArticle] = useState<GuidelineArticle | null>(null)
   const guideline = guidelinesData[guidelineType]
 
+  const handleArticleClick = (article: GuidelineArticle) => {
+    setSelectedArticle(article)
+    
+    // Save activity to localStorage specific to the logged-in user
+    const savedSession = localStorage.getItem("portal_user")
+    if (savedSession) {
+      try {
+        const user = JSON.parse(savedSession)
+        if (user.email) {
+          const key = `recent_docs_${user.email}`
+          const existingStr = localStorage.getItem(key)
+          const existing = existingStr ? JSON.parse(existingStr) : [
+            { title: "API Testing Checklist", viewedAt: "2 hours ago", type: "PDF" },
+            { title: "Employee Handbook 2026", viewedAt: "Yesterday", type: "PDF" },
+            { title: "WAPT Methodology Guide", viewedAt: "3 days ago", type: "DOC" },
+          ]
+          
+          const newDoc = { title: article.title, timestamp: new Date().toISOString(), type: "DOC" }
+          
+          // Add new doc to the front, filter out duplicate, and keep only top 5
+          const updated = [newDoc, ...existing.filter((d: any) => d.title !== article.title)].slice(0, 5)
+          localStorage.setItem(key, JSON.stringify(updated))
+        }
+      } catch (e) {
+        console.error("Error saving recent document", e)
+      }
+    }
+  }
+
   if (selectedArticle) {
     return (
       <main className="flex-1 bg-background p-6 overflow-y-auto">
@@ -432,7 +461,7 @@ export function GuidelinesContent({ guidelineType, onBack }: GuidelinesContentPr
           <Card
             key={article.id}
             className="border-0 card-elevated cursor-pointer group"
-            onClick={() => setSelectedArticle(article)}
+            onClick={() => handleArticleClick(article)}
           >
             <CardContent className="p-6">
               <div className="flex items-start justify-between gap-4">
