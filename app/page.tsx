@@ -90,6 +90,11 @@ export default function InfiniKnowPortal() {
     }
   }
 
+  const handleLogout = () => {
+    setUser(null)
+    localStorage.removeItem("portal_user")
+  }
+
   const renderContent = () => {
     switch (activeItem) {
       case "profile":
@@ -178,7 +183,7 @@ export default function InfiniKnowPortal() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <PortalHeader onNavigate={handleItemClick} />
+      <PortalHeader user={user} onNavigate={handleItemClick} onLogout={handleLogout} />
       <div className="flex flex-1">
         <PortalSidebar activeItem={activeItem} onItemClick={handleItemClick} />
         {renderContent()}

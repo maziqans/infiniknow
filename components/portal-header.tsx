@@ -15,10 +15,12 @@ import {
 import { InfiniKnowLogo } from "./infiniknow-logo"
 
 interface PortalHeaderProps {
+  user?: { name: string; position: string } | null
   onNavigate?: (page: string) => void
+  onLogout?: () => void
 }
 
-export function PortalHeader({ onNavigate }: PortalHeaderProps) {
+export function PortalHeader({ user, onNavigate, onLogout }: PortalHeaderProps) {
   return (
     <header className="bg-navy hexagon-pattern relative">
       {/* Gradient overlay for depth */}
@@ -61,12 +63,14 @@ export function PortalHeader({ onNavigate }: PortalHeaderProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-3 px-2 py-1.5 h-auto hover:bg-white/10">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-white">Alex Smith</p>
-                  <p className="text-xs text-white/60">Senior Analyst</p>
+                  <p className="text-sm font-medium text-white">{user?.name || "Alex Smith"}</p>
+                  <p className="text-xs text-white/60">{user?.position || "Senior Analyst"}</p>
                 </div>
                 <Avatar className="h-10 w-10 border-2 border-white/30">
-                  <AvatarImage src="/placeholder-user.jpg" alt="Alex Smith" />
-                  <AvatarFallback className="bg-red text-white font-semibold">AS</AvatarFallback>
+                  <AvatarImage src="/placeholder-user.jpg" alt={user?.name || "Alex Smith"} />
+                  <AvatarFallback className="bg-red text-white font-semibold">
+                    {user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : "AS"}
+                  </AvatarFallback>
                 </Avatar>
                 <ChevronDown className="h-4 w-4 text-white/70" />
               </Button>
@@ -80,7 +84,10 @@ export function PortalHeader({ onNavigate }: PortalHeaderProps) {
                 Profile
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer text-red focus:text-red">
+              <DropdownMenuItem 
+                className="cursor-pointer text-red focus:text-red"
+                onClick={() => onLogout?.()}
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </DropdownMenuItem>
