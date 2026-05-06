@@ -12,6 +12,8 @@ import { OnboardingContent } from "@/components/onboarding-content"
 import { TemplatesContent } from "@/components/templates-content"
 import { GuidelinesContent } from "@/components/guidelines-content"
 import { PortalFooter } from "@/components/portal-footer"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 // Dynamically import components that use non-SSR safe libraries (like react-organizational-chart)
 // This guarantees they are only evaluated and loaded in the browser.
@@ -23,9 +25,17 @@ const CompanyStructureContent = dynamic(
 export default function InfiniKnowPortal() {
   const [activeItem, setActiveItem] = useState("home")
   const [isMounted, setIsMounted] = useState(false)
+  const [user, setUser] = useState<{ name: string } | null>(null)
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
 
   useEffect(() => {
     setIsMounted(true)
+    // Check for existing session in local storage for demo purposes
+    const savedSession = localStorage.getItem("portal_user")
+    if (savedSession) {
+      setUser(JSON.parse(savedSession))
+    }
   }, [])
 
   const handleItemClick = (id: string) => {
@@ -33,6 +43,16 @@ export default function InfiniKnowPortal() {
   }
 
   const goHome = () => setActiveItem("home")
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (username.trim()) {
+      const loggedInUser = { name: username }
+      setUser(loggedInUser)
+      localStorage.setItem("portal_user", JSON.stringify(loggedInUser))
+      setActiveItem("home")
+    }
+  }
 
   const renderContent = () => {
     switch (activeItem) {
@@ -61,7 +81,7 @@ export default function InfiniKnowPortal() {
       case "facilities":
         return <FacilitiesContent onBack={goHome} />
       default:
-        return <DashboardContent />
+        return <DashboardContent userName={user?.name} />
     }
   }
 
@@ -69,6 +89,52 @@ export default function InfiniKnowPortal() {
   if (!isMounted) {
     // Return a blank background that matches your theme to prevent a flash of unstyled content
     return <div className="min-h-screen bg-background flex flex-col"></div>
+  }
+
+  // Render Login Screen if not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-0 card-elevated shadow-xl">
+          <CardHeader className="text-center pb-2">
+            <div className="mx-auto w-12 h-12 bg-red/10 rounded-xl flex items-center justify-center mb-4">
+              <span className="font-bold text-red text-xl">IK</span>
+            </div>
+            <CardTitle className="text-2xl font-bold text-navy">Welcome to InfiniKnow</CardTitle>
+            <p className="text-sm text-muted-foreground mt-2">Enter your credentials to access the portal</p>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Username</label>
+                <input 
+                  type="text" 
+                  required
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-red focus:border-transparent" 
+                  placeholder="Enter any username" 
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Password</label>
+                <input 
+                  type="password" 
+                  required
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-red focus:border-transparent" 
+                  placeholder="Enter any password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <Button type="submit" className="w-full bg-red hover:bg-red/90 text-white mt-2">
+                Sign In
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (

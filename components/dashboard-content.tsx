@@ -76,7 +76,11 @@ function QuickAccessCard({ icon, title, description, glowClass, onClick }: Quick
   )
 }
 
-export function DashboardContent() {
+interface DashboardProps {
+  userName?: string
+}
+
+export function DashboardContent({ userName = "Alex Smith" }: DashboardProps) {
   return (
     <main className="flex-1 bg-background p-6 overflow-y-auto">
       {/* Welcome Banner */}
@@ -92,7 +96,7 @@ export function DashboardContent() {
                   <span className="text-sm font-medium text-red">Welcome back</span>
                 </div>
                 <h1 className="text-2xl font-bold text-foreground mb-2">
-                  Good morning, Alex Smith
+                Good morning, {userName}
                 </h1>
                 <p className="text-muted-foreground max-w-md">
                   Access all the resources you need. Your one-stop portal for policies, templates, and company information.
