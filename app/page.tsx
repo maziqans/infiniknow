@@ -71,7 +71,7 @@ export default function InfiniKnowPortal() {
     } else {
       handleLogout(); // Token is invalid or expired
     }
-  }, [])
+  }
 
   const handleItemClick = (id: string) => {
     setActiveItem(id)
