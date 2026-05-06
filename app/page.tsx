@@ -50,6 +50,20 @@ const mockDatabase = [
       department: "Technical",
     },
   },
+  {
+    email: "user1@infinicore.com.my",
+    password: "123pass",
+    profile: {
+      name: "Adam Najmi",
+      email: "user1@infinicore.com.my",
+      ic: "980101-14-5555",
+      personalEmail: "adam.najmi.design@gmail.com",
+      position: "Graphic Designer",
+      address: "B-12-04, Residensi Wangsa, Wangsa Maju, 53300 Kuala Lumpur",
+      phoneNo: "011-2345678",
+      department: "Marketing",
+    },
+  },
 ]
 
 export default function InfiniKnowPortal() {
@@ -106,7 +120,13 @@ export default function InfiniKnowPortal() {
       case "profile":
         return <ProfileContent user={user} onBack={goHome} />
       case "onboarding":
-        return <OnboardingContent onBack={goHome} />
+        return (
+          <OnboardingContent 
+            userPosition={user?.position} 
+            userDepartment={user?.department} 
+            onBack={goHome} 
+          />
+        )
       case "policies":
         return <PoliciesContent onBack={goHome} />
       case "structure":
