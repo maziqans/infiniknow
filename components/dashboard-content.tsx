@@ -13,25 +13,37 @@ import {
   ArrowRight,
   Sparkles,
   Coffee,
+  Trash2,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
-const announcements = [
+interface Announcement {
+  id: string
+  title: string
+  date: string
+  preview: string
+  isNew: boolean
+}
+
+const defaultAnnouncements: Announcement[] = [
   {
+    id: "1",
     title: "Q2 Town Hall Meeting Scheduled",
     date: "May 5, 2026",
     preview: "Join us for our quarterly town hall on May 15th at 2:00 PM EST...",
     isNew: true,
   },
   {
+    id: "2",
     title: "New Security Training Available",
     date: "May 3, 2026",
     preview: "Mandatory cybersecurity awareness training is now available...",
     isNew: true,
   },
   {
+    id: "3",
     title: "Office Renovation Update",
     date: "May 1, 2026",
     preview: "Phase 2 of the office renovation will begin next week...",
@@ -74,6 +86,8 @@ function QuickAccessCard({ icon, title, description, glowClass, onClick }: Quick
 interface DashboardProps {
   userName?: string
   userEmail?: string
+  userPosition?: string
+  userDepartment?: string
 }
 
 interface RecentDoc {
@@ -96,7 +110,7 @@ function getTimeAgo(dateString?: string) {
   return `${days} days ago`
 }
 
-export function DashboardContent({ userName = "Alex Smith", userEmail }: DashboardProps) {
+export function DashboardContent({ userName = "Alex Smith", userEmail, userPosition, userDepartment }: DashboardProps) {
   const [recentDocs, setRecentDocs] = useState<RecentDoc[]>([
     { title: "API Testing Checklist", viewedAt: "2 hours ago", type: "PDF" },
     { title: "Employee Handbook 2026", viewedAt: "Yesterday", type: "PDF" },
@@ -111,6 +125,53 @@ export function DashboardContent({ userName = "Alex Smith", userEmail }: Dashboa
       }
     }
   }, [userEmail])
+
+  const [announcementsList, setAnnouncementsList] = useState<Announcement[]>([])
+  const [isAdding, setIsAdding] = useState(false)
+  const [newTitle, setNewTitle] = useState("")
+  const [newPreview, setNewPreview] = useState("")
+
+  const canManageAnnouncements = 
+    userDepartment?.toLowerCase().includes("admin") ||
+    userPosition?.toLowerCase().includes("chief") ||
+    userPosition?.toLowerCase().includes("c-level") ||
+    userPosition?.toLowerCase().includes("ceo") ||
+    userPosition?.toLowerCase().includes("cto")
+
+  useEffect(() => {
+    const stored = localStorage.getItem("portal_announcements")
+    if (stored) {
+      setAnnouncementsList(JSON.parse(stored))
+    } else {
+      setAnnouncementsList(defaultAnnouncements)
+      localStorage.setItem("portal_announcements", JSON.stringify(defaultAnnouncements))
+    }
+  }, [])
+
+  const handleAddAnnouncement = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newTitle.trim() || !newPreview.trim()) return
+    const newAnnouncement: Announcement = {
+      id: Date.now().toString(),
+      title: newTitle,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      preview: newPreview,
+      isNew: true
+    }
+    const updated = [newAnnouncement, ...announcementsList]
+    setAnnouncementsList(updated)
+    localStorage.setItem("portal_announcements", JSON.stringify(updated))
+    setIsAdding(false)
+    setNewTitle("")
+    setNewPreview("")
+  }
+
+  const handleDeleteAnnouncement = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const updated = announcementsList.filter(a => a.id !== id)
+    setAnnouncementsList(updated)
+    localStorage.setItem("portal_announcements", JSON.stringify(updated))
+  }
 
   return (
     <main className="flex-1 bg-background p-6 overflow-y-auto">
@@ -135,7 +196,7 @@ export function DashboardContent({ userName = "Alex Smith", userEmail }: Dashboa
               </div>
               <div className="hidden lg:flex items-center gap-6">
                 <div className="text-center px-6 py-4 bg-white/80 backdrop-blur-sm rounded-lg shadow-sm border border-white/50">
-                  <p className="text-3xl font-bold text-red">3</p>
+                  <p className="text-3xl font-bold text-red">{announcementsList.filter(a => a.isNew).length}</p>
                   <p className="text-xs text-muted-foreground font-medium">New Announcements</p>
                 </div>
                 <div className="text-center px-6 py-4 bg-white/80 backdrop-blur-sm rounded-lg shadow-sm border border-white/50">
@@ -194,38 +255,93 @@ export function DashboardContent({ userName = "Alex Smith", userEmail }: Dashboa
                 </div>
                 <CardTitle className="text-lg">Announcements</CardTitle>
               </div>
-              <Button variant="ghost" size="sm" className="text-red hover:text-red-hover hover:bg-red/5">
-                View All
-              </Button>
+              {canManageAnnouncements ? (
+                <Button 
+                  size="sm" 
+                  onClick={() => setIsAdding(!isAdding)} 
+                  className="bg-red hover:bg-red/90 text-white"
+                >
+                  {isAdding ? "Cancel" : "+ Add New"}
+                </Button>
+              ) : (
+                <Button variant="ghost" size="sm" className="text-red hover:text-red-hover hover:bg-red/5">
+                  View All
+                </Button>
+              )}
             </div>
           </CardHeader>
           <CardContent className="pt-0">
+            {isAdding && (
+              <form onSubmit={handleAddAnnouncement} className="mb-4 p-4 rounded-lg bg-secondary/30 border border-border/50 space-y-3">
+                <input 
+                  type="text" 
+                  placeholder="Announcement Title" 
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-1 focus:ring-red"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  required
+                />
+                <textarea 
+                  placeholder="Announcement Details..." 
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-1 focus:ring-red resize-none"
+                  rows={2}
+                  value={newPreview}
+                  onChange={(e) => setNewPreview(e.target.value)}
+                  required
+                />
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setIsAdding(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" size="sm" className="bg-red hover:bg-red/90 text-white">
+                    Publish
+                  </Button>
+                </div>
+              </form>
+            )}
             <div className="space-y-3">
-              {announcements.map((item, index) => (
-                <div
-                  key={index}
-                  className="p-4 rounded-lg bg-secondary/40 hover:bg-secondary/70 transition-all duration-200 cursor-pointer group border-l-3 border-transparent hover:border-red"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold text-foreground group-hover:text-red transition-colors">
-                          {item.title}
-                        </h4>
-                        {item.isNew && (
-                          <Badge className="bg-red text-white text-xs px-1.5 py-0">New</Badge>
+              {announcementsList.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-sm text-muted-foreground">No announcements available.</p>
+                </div>
+              ) : (
+                announcementsList.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-4 rounded-lg bg-secondary/40 hover:bg-secondary/70 transition-all duration-200 cursor-pointer group border-l-3 border-transparent hover:border-red"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-semibold text-foreground group-hover:text-red transition-colors">
+                            {item.title}
+                          </h4>
+                          {item.isNew && (
+                            <Badge className="bg-red text-white text-xs px-1.5 py-0">New</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-1">
+                          {item.preview}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap bg-background/50 px-2 py-1 rounded">
+                          {item.date}
+                        </span>
+                        {canManageAnnouncements && (
+                          <button 
+                            onClick={(e) => handleDeleteAnnouncement(item.id, e)}
+                            className="p-1.5 -mr-1.5 text-muted-foreground hover:text-red hover:bg-red/10 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Delete Announcement"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground line-clamp-1">
-                        {item.preview}
-                      </p>
                     </div>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap bg-background/50 px-2 py-1 rounded">
-                      {item.date}
-                    </span>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
