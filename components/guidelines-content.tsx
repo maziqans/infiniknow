@@ -33,126 +33,139 @@ const guidelinesData: Record<string, { title: string; description: string; icon:
     icon: <Bug className="h-6 w-6" />,
     articles: [
       {
-        id: "wapt-1",
-        title: "Introduction to Web Application Penetration Testing",
-        excerpt: "Learn the fundamentals of WAPT and why it is essential for securing web applications.",
-        author: "Alex Smith",
-        date: "May 1, 2026",
-        readTime: "8 min read",
-        content: `Web Application Penetration Testing (WAPT) is a critical security assessment methodology designed to identify vulnerabilities in web applications before malicious actors can exploit them.
+        id: "wapt-info",
+        title: "01. Information Gathering (WSTG-INFO)",
+        excerpt: "Techniques for discovering information about the target web application, its architecture, and its environment.",
+        author: "OWASP WSTG",
+        date: "Latest Version",
+        readTime: "15 min read",
+        content: `Information gathering is the first and most critical phase of a penetration test. It provides the foundation for all subsequent testing phases.
 
-## What is WAPT?
+## Overview
+The goal of information gathering is to map the target application's attack surface, understand its underlying technologies, and identify potential entry points for further exploitation.
 
-WAPT involves simulating real-world attacks against web applications to discover security weaknesses. This proactive approach helps organizations understand their security posture and remediate issues before they become incidents.
+## Testing Checklist
 
-## Key Objectives
+- [ ] WSTG-INFO-01: Conduct Search Engine Discovery Reconnaissance for Information Leakage
+- [ ] WSTG-INFO-02: Fingerprint Web Server
+- [ ] WSTG-INFO-03: Review Webserver Metafiles for Information Leakage
+- [ ] WSTG-INFO-04: Enumerate Applications on Webserver
+- [ ] WSTG-INFO-05: Review Webpage Content for Information Leakage
+- [ ] WSTG-INFO-06: Identify Application Entry Points
+- [ ] WSTG-INFO-07: Map Execution Paths Through Application
+- [ ] WSTG-INFO-08: Fingerprint Web Application Framework
+- [ ] WSTG-INFO-09: Fingerprint Web Application
+- [ ] WSTG-INFO-10: Map Application Architecture
 
-1. **Identify Vulnerabilities**: Discover security flaws in application logic, authentication, session management, and data handling.
-2. **Assess Risk**: Evaluate the potential impact of discovered vulnerabilities on business operations.
-3. **Provide Recommendations**: Deliver actionable remediation guidance to development teams.
-
-## Testing Phases
-
-### 1. Reconnaissance
-Gather information about the target application, including technology stack, entry points, and potential attack vectors.
-
-### 2. Scanning
-Use automated tools to identify common vulnerabilities and misconfigurations.
-
-### 3. Manual Testing
-Perform in-depth manual analysis to discover complex vulnerabilities that automated tools might miss.
-
-### 4. Exploitation
-Attempt to exploit identified vulnerabilities to verify their existence and assess impact.
-
-### 5. Reporting
-Document all findings with clear severity ratings and remediation recommendations.
-
-## Best Practices
-
-- Always obtain proper authorization before testing
-- Document all testing activities thoroughly
-- Follow the principle of least privilege
-- Report critical findings immediately
-- Maintain confidentiality of all discovered vulnerabilities`,
+### Common Tools
+1. Nmap
+2. Wappalyzer
+3. Nikto
+4. Burp Suite Spider`,
       },
       {
-        id: "wapt-2",
-        title: "OWASP Top 10 Testing Methodology",
-        excerpt: "A comprehensive guide to testing for the OWASP Top 10 vulnerabilities in web applications.",
-        author: "Jordan Lee",
-        date: "Apr 28, 2026",
+        id: "wapt-conf",
+        title: "02. Configuration & Deployment Mgmt (WSTG-CONF)",
+        excerpt: "Testing the web server and application configuration for security misconfigurations.",
+        author: "OWASP WSTG",
+        date: "Latest Version",
         readTime: "12 min read",
-        content: `The OWASP Top 10 represents the most critical security risks to web applications. This guide provides testing methodologies for each category.
+        content: `Misconfigurations at the network, platform, or application level are among the most common vulnerabilities exploited by attackers.
 
-## A01:2021 - Broken Access Control
+## Overview
+This phase verifies that the application and its environment are configured securely, following the principle of least privilege and defense in depth.
 
-### Testing Approach
-- Test horizontal privilege escalation
-- Verify vertical privilege escalation controls
-- Check for IDOR vulnerabilities
-- Test force browsing to restricted pages
+## Testing Checklist
 
-## A02:2021 - Cryptographic Failures
+- [ ] WSTG-CONF-01: Test Network Infrastructure Configuration
+- [ ] WSTG-CONF-02: Test Application Platform Configuration
+- [ ] WSTG-CONF-03: Test File Extensions Handling for Sensitive Information
+- [ ] WSTG-CONF-04: Review Old Backup and Unreferenced Files for Sensitive Information
+- [ ] WSTG-CONF-05: Enumerate Infrastructure and Application Admin Interfaces
+- [ ] WSTG-CONF-06: Test HTTP Methods
+- [ ] WSTG-CONF-07: Test HTTP Strict Transport Security
+- [ ] WSTG-CONF-08: Test RIA Cross Domain Policy
+- [ ] WSTG-CONF-09: Test File Permission
+- [ ] WSTG-CONF-10: Test for Subdomain Takeover
+- [ ] WSTG-CONF-11: Test Cloud Storage
 
-### Testing Approach
-- Verify TLS implementation
-- Check for sensitive data exposure
-- Test encryption key management
-- Analyze data transmission security
-
-## A03:2021 - Injection
-
-### Testing Approach
-- Test SQL injection points
-- Check for command injection
-- Verify LDAP injection controls
-- Test XPath injection vulnerabilities
-
-## A04:2021 - Insecure Design
-
-### Testing Approach
-- Review security requirements
-- Analyze threat modeling
-- Check security controls at design level
-- Verify secure development practices`,
+### Best Practices
+- Disable unnecessary services and ports
+- Remove default credentials
+- Ensure security headers (HSTS, CSP, X-Frame-Options) are configured properly`,
       },
       {
-        id: "wapt-3",
-        title: "API Security Testing Checklist",
-        excerpt: "Essential checks for securing REST and GraphQL APIs in your applications.",
-        author: "Casey Wong",
-        date: "Apr 20, 2026",
-        readTime: "10 min read",
-        content: `API security is crucial in modern web applications. This checklist covers essential testing areas.
+        id: "wapt-athn",
+        title: "04. Authentication Testing (WSTG-ATHN)",
+        excerpt: "Evaluating the mechanisms used to verify the identity of a user, service, or application.",
+        author: "OWASP WSTG",
+        date: "Latest Version",
+        readTime: "20 min read",
+        content: `Authentication is the process of verifying that an individual, entity, or website is who it claims to be.
 
-## Authentication Testing
+## Overview
+Flaws in authentication can allow an attacker to bypass login controls, assume the identity of other users, or completely compromise the application.
 
-- [ ] Test API key handling
-- [ ] Verify JWT implementation
-- [ ] Check OAuth/OIDC flows
-- [ ] Test session management
+## Testing Checklist
 
-## Authorization Testing
+- [ ] WSTG-ATHN-01: Test for Credentials Transported over an Unencrypted Channel
+- [ ] WSTG-ATHN-02: Test for Default Credentials
+- [ ] WSTG-ATHN-03: Test for Weak Lock Out Mechanism
+- [ ] WSTG-ATHN-04: Test for Bypassing Authentication Schema
+- [ ] WSTG-ATHN-05: Test for Vulnerable Remember Password
+- [ ] WSTG-ATHN-06: Test for Browser Cache Weaknesses
+- [ ] WSTG-ATHN-07: Test for Weak Password Policy
+- [ ] WSTG-ATHN-08: Test for Weak Security Question Answer
+- [ ] WSTG-ATHN-09: Test for Weak Password Change or Reset Functionalities
+- [ ] WSTG-ATHN-10: Test for Weaker Authentication in Alternative Channel`,
+      },
+      {
+        id: "wapt-athz",
+        title: "05. Authorization Testing (WSTG-ATHZ)",
+        excerpt: "Checking if the application properly enforces access controls and prevents privilege escalation.",
+        author: "OWASP WSTG",
+        date: "Latest Version",
+        readTime: "18 min read",
+        content: `Authorization follows authentication and dictates what actions a user is allowed to perform.
 
-- [ ] Verify role-based access control
-- [ ] Test object-level authorization
-- [ ] Check function-level access control
-- [ ] Test multi-tenancy isolation
+## Overview
+Testing authorization involves verifying that users cannot access resources or perform actions that they are not explicitly permitted to access. This includes horizontal and vertical privilege escalation.
 
-## Input Validation
+## Testing Checklist
 
-- [ ] Test for injection vulnerabilities
-- [ ] Verify parameter tampering controls
-- [ ] Check mass assignment protection
-- [ ] Test rate limiting implementation
+- [ ] WSTG-ATHZ-01: Testing Directory Traversal File Include
+- [ ] WSTG-ATHZ-02: Testing for Bypassing Authorization Schema
+- [ ] WSTG-ATHZ-03: Testing for Privilege Escalation
+- [ ] WSTG-ATHZ-04: Testing for Insecure Direct Object References (IDOR)
 
-## Data Protection
+### Privilege Escalation Types
+- **Horizontal**: Accessing resources of another user with the same role (e.g., viewing another user's profile).
+- **Vertical**: Accessing resources of a user with a higher role (e.g., a standard user accessing the admin panel).`,
+      },
+      {
+        id: "wapt-inpv",
+        title: "07. Input Validation Testing (WSTG-INPV)",
+        excerpt: "Testing how the application handles various types of input to identify injection flaws.",
+        author: "OWASP WSTG",
+        date: "Latest Version",
+        readTime: "25 min read",
+        content: `Input validation testing is arguably the most common type of web application security testing.
 
-- [ ] Verify sensitive data handling
-- [ ] Check response filtering
-- [ ] Test error handling
-- [ ] Verify logging practices`,
+## Overview
+Failure to properly validate input can lead to a wide variety of vulnerabilities, including Cross-Site Scripting (XSS), SQL Injection, and OS Command Injection.
+
+## Testing Checklist
+
+- [ ] WSTG-INPV-01: Testing for Reflected Cross Site Scripting
+- [ ] WSTG-INPV-02: Testing for Stored Cross Site Scripting
+- [ ] WSTG-INPV-03: Testing for HTTP Verb Tampering
+- [ ] WSTG-INPV-04: Testing for HTTP Parameter Pollution
+- [ ] WSTG-INPV-05: Testing for SQL Injection
+- [ ] WSTG-INPV-06: Testing for LDAP Injection
+- [ ] WSTG-INPV-08: Testing for SSI Injection
+- [ ] WSTG-INPV-09: Testing for XPath Injection
+- [ ] WSTG-INPV-11: Testing for Code Injection
+- [ ] WSTG-INPV-12: Testing for Command Injection`,
       },
     ],
   },
