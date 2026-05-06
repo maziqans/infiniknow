@@ -29,6 +29,7 @@ interface UserProfile {
   email: string;
   ic_number: string;
   personal_email: string;
+  role: string;
   position: string
   address: string;
   phone_number: string;
@@ -62,7 +63,11 @@ export default function InfiniKnowPortal() {
     if (response.ok) {
       const profileData = await response.json();
       // Map Django's snake_case to frontend's camelCase if needed, or just use snake_case
-      setUser({ ...profileData.user, ...profileData });
+      setUser({ 
+        ...profileData, 
+        name: `${profileData.user.first_name} ${profileData.user.last_name}`.trim() || profileData.user.username,
+        email: profileData.user.email 
+      });
     } else {
       handleLogout(); // Token is invalid or expired
     }

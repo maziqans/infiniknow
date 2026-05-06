@@ -21,7 +21,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from portal.views import UserProfileViewSet, AnnouncementViewSet, OnboardingItemViewSet, RecentActivityViewSet
+from portal.views import UserProfileViewSet, AnnouncementViewSet, OnboardingItemViewSet, RecentActivityViewSet, CurrentUserProfileView
 
 router = routers.DefaultRouter()
 router.register(r'user-profiles', UserProfileViewSet)
@@ -32,6 +32,7 @@ router.register(r'recent-activities', RecentActivityViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/me/', CurrentUserProfileView.as_view(), name='current_user_profile'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

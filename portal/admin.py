@@ -3,7 +3,8 @@ from .models import UserProfile, Announcement, OnboardingItem, RecentActivity
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'position', 'department', 'phone_number')
+    list_display = ('user', 'role', 'position', 'department', 'phone_number')
+    list_filter = ('role', 'department')
     search_fields = ('user__email', 'user__first_name', 'position', 'department')
 
 @admin.register(Announcement)

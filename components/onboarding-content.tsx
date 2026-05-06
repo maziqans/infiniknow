@@ -22,14 +22,8 @@ interface OnboardingItem {
     name: string
     size: string
     uploadedAt: string
-  }
+  } | null | string
 }
-
-const defaultOnboardingItems: OnboardingItem[] = [
-  { id: "employment_letter", title: "Letter of Employment", description: "Your official employment confirmation letter." },
-  { id: "onboarding_checklist", title: "Onboarding Checklist", description: "A step-by-step guide for your first week." },
-  { id: "job_application", title: "Job Application", description: "The submitted job application form for our records." },
-]
 
 interface OnboardingContentProps {
   userPosition?: string
@@ -48,43 +42,35 @@ export function OnboardingContent({ userPosition, userDepartment, onBack }: Onbo
     userPosition?.toLowerCase().includes("cto")
 
   useEffect(() => {
-    const stored = localStorage.getItem("portal_onboarding_docs")
-    if (stored) {
-      setOnboardingItems(JSON.parse(stored))
-    } else {
-      setOnboardingItems(defaultOnboardingItems)
-      // Do not set in local storage on first load, let an admin action do it.
-    }
+    const fetchItems = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/onboarding-items/");
+        if (response.ok) {
+          setOnboardingItems(await response.json());
+        }
+      } catch (error) {
+        console.error("Failed to fetch onboarding items:", error);
+      }
+    };
+    fetchItems();
   }, [])
 
   const handleUpload = (itemId: string) => {
-    const updatedItems = onboardingItems.map(item => {
-      if (item.id === itemId) {
-        return {
-          ...item,
-          file: {
-            name: `${item.title.replace(/\s/g, '_')}_${Date.now()}.pdf`,
-            size: `${(Math.random() * 800 + 100).toFixed(0)} KB`,
-            uploadedAt: new Date().toISOString(),
-          }
-        }
-      }
-      return item
-    })
-    setOnboardingItems(updatedItems)
-    localStorage.setItem("portal_onboarding_docs", JSON.stringify(updatedItems))
+    alert("To upload a file, please use the Django Admin panel for now at http://localhost:8000/admin")
   }
 
-  const handleRemoveFile = (itemId: string) => {
-    const updatedItems = onboardingItems.map(item => {
-      if (item.id === itemId) {
-        const { file, ...rest } = item
-        return rest
+  const handleRemoveFile = async (itemId: string) => {
+    const token = localStorage.getItem("auth_token");
+    try {
+      const response = await fetch(`http://localhost:8000/api/onboarding-items/${itemId}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ file: null })
+      });
+      if (response.ok) {
+        setOnboardingItems(onboardingItems.map(item => item.id === itemId ? { ...item, file: undefined } : item));
       }
-      return item
-    })
-    setOnboardingItems(updatedItems)
-    localStorage.setItem("portal_onboarding_docs", JSON.stringify(updatedItems))
+    } catch (e) { console.error(e) }
   }
 
   return (
@@ -114,14 +100,16 @@ export function OnboardingContent({ userPosition, userDepartment, onBack }: Onbo
             </p>
           </div>
           <Badge variant="secondary" className="text-sm">
-            {defaultOnboardingItems.length} Items
+            {onboardingItems.length} Items
           </Badge>
         </div>
       </div>
 
       {/* Document List */}
       <div className="space-y-4">
-        {(onboardingItems.length > 0 ? onboardingItems : defaultOnboardingItems).map((item) => (
+        {onboardingItems.length === 0 ? (
+          <Card className="border-0 card-elevated"><CardContent className="p-6 text-center text-muted-foreground">No onboarding items found. Please add them in Django Admin.</CardContent></Card>
+        ) : onboardingItems.map((item) => (
           <Card key={item.id} className="border-0 card-elevated">
             <CardContent className="p-6">
               <div className="flex items-center justify-between gap-4">
@@ -142,11 +130,13 @@ export function OnboardingContent({ userPosition, userDepartment, onBack }: Onbo
                         <CheckCircle className="h-4 w-4" />
                         File Uploaded
                       </div>
-                      <p className="text-xs text-muted-foreground">{item.file.name} ({item.file.size})</p>
+                      <p className="text-xs text-muted-foreground">Document available</p>
                     </div>
-                    <Button size="sm" variant="outline">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
+                    <Button size="sm" variant="outline" asChild>
+                      <a href={typeof item.file === 'string' ? item.file : '#'} target="_blank" rel="noopener noreferrer">
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </a>
                     </Button>
                     {canManageOnboarding && (
                       <Button size="sm" variant="ghost" className="text-red hover:text-red" onClick={() => handleRemoveFile(item.id)}>

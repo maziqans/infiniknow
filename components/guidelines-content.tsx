@@ -313,26 +313,20 @@ export function GuidelinesContent({ guidelineType, onBack }: GuidelinesContentPr
   const handleArticleClick = (article: GuidelineArticle) => {
     setSelectedArticle(article)
     
-    // Save activity to localStorage specific to the logged-in user
-    const savedSession = localStorage.getItem("portal_user")
-    if (savedSession) {
+    const token = localStorage.getItem("auth_token")
+    if (token) {
       try {
-        const user = JSON.parse(savedSession)
-        if (user.email) {
-          const key = `recent_docs_${user.email}`
-          const existingStr = localStorage.getItem(key)
-          const existing = existingStr ? JSON.parse(existingStr) : [
-            { title: "API Testing Checklist", viewedAt: "2 hours ago", type: "PDF" },
-            { title: "Employee Handbook 2026", viewedAt: "Yesterday", type: "PDF" },
-            { title: "WAPT Methodology Guide", viewedAt: "3 days ago", type: "DOC" },
-          ]
-          
-          const newDoc = { title: article.title, timestamp: new Date().toISOString(), type: "DOC" }
-          
-          // Add new doc to the front, filter out duplicate, and keep only top 5
-          const updated = [newDoc, ...existing.filter((d: any) => d.title !== article.title)].slice(0, 5)
-          localStorage.setItem(key, JSON.stringify(updated))
-        }
+        fetch("http://localhost:8000/api/recent-activities/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            title: article.title,
+            doc_type: "DOC"
+          })
+        })
       } catch (e) {
         console.error("Error saving recent document", e)
       }

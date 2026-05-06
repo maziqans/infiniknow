@@ -9,10 +9,10 @@ import { Badge } from "@/components/ui/badge"
 interface Announcement {
   id: string
   title: string
-  date: string
   preview: string
   content?: string
-  isNew: boolean
+  is_new: boolean
+  created_at: string
 }
 
 interface AnnouncementsContentProps {
@@ -44,10 +44,18 @@ export function AnnouncementsContent({
     userPosition?.toLowerCase().includes("cto")
 
   useEffect(() => {
-    const stored = localStorage.getItem("portal_announcements")
-    if (stored) {
-      setAnnouncementsList(JSON.parse(stored))
-    }
+    const fetchAnnouncements = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/announcements/");
+        if (response.ok) {
+          const data = await response.json();
+          setAnnouncementsList(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch announcements:", error);
+      }
+    };
+    fetchAnnouncements();
   }, [])
 
   // Sync prop to local state if navigating from Dashboard
@@ -57,32 +65,47 @@ export function AnnouncementsContent({
     }
   }, [initialSelectedId])
 
-  const handleAddAnnouncement = (e: React.FormEvent) => {
+  const handleAddAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newTitle.trim() || !newContent.trim()) return
     
     const previewText = newContent.length > 80 ? newContent.substring(0, 80) + "..." : newContent;
-    const newAnnouncement: Announcement = {
-      id: Date.now().toString(),
+    const newAnnouncementData = {
       title: newTitle,
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       preview: previewText,
       content: newContent,
-      isNew: true
+      is_new: true
+    };
+
+    const token = localStorage.getItem("auth_token");
+    const response = await fetch("http://localhost:8000/api/announcements/", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(newAnnouncementData)
+    });
+
+    if (response.ok) {
+      const createdAnnouncement = await response.json();
+      setAnnouncementsList([createdAnnouncement, ...announcementsList]);
+      setIsAdding(false);
+      setNewTitle("");
+      setNewContent("");
     }
-    const updated = [newAnnouncement, ...announcementsList]
-    setAnnouncementsList(updated)
-    localStorage.setItem("portal_announcements", JSON.stringify(updated))
-    setIsAdding(false)
-    setNewTitle("")
-    setNewContent("")
   }
 
-  const handleDeleteAnnouncement = (id: string, e: React.MouseEvent) => {
+  const handleDeleteAnnouncement = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    const updated = announcementsList.filter(a => a.id !== id)
-    setAnnouncementsList(updated)
-    localStorage.setItem("portal_announcements", JSON.stringify(updated))
+    const token = localStorage.getItem("auth_token");
+    const response = await fetch(`http://localhost:8000/api/announcements/${id}/`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.status === 204) {
+      setAnnouncementsList(announcementsList.filter(a => a.id !== id));
+    }
     if (selectedId === id) {
       handleBackToList()
     }
@@ -108,13 +131,13 @@ export function AnnouncementsContent({
           <CardContent className="pt-8 pb-12 px-8">
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-4">
-                {selectedAnnouncement.isNew && <Badge className="bg-red text-white">New</Badge>}
+                {selectedAnnouncement.is_new && <Badge className="bg-red text-white">New</Badge>}
               </div>
               <h1 className="text-3xl font-bold text-foreground mb-4">{selectedAnnouncement.title}</h1>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  {selectedAnnouncement.date}
+                  {new Date(selectedAnnouncement.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </div>
               </div>
             </div>
@@ -188,13 +211,13 @@ export function AnnouncementsContent({
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-lg font-semibold text-foreground group-hover:text-red transition-colors">{item.title}</h3>
-                      {item.isNew && <Badge className="bg-red text-white text-xs px-2 py-0.5">New</Badge>}
+                      {item.is_new && <Badge className="bg-red text-white text-xs px-2 py-0.5">New</Badge>}
                     </div>
                     <p className="text-muted-foreground mb-3 line-clamp-2">{item.preview}</p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
-                        {item.date}
+                        {new Date(item.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </div>
                     </div>
                   </div>

@@ -90,20 +90,31 @@ function getTimeAgo(dateString?: string) {
 }
 
 export function DashboardContent({ userName = "Alex Smith", userEmail, userPosition, userDepartment, onNavigate, onAnnouncementClick }: DashboardProps) {
-  const [recentDocs, setRecentDocs] = useState<RecentDoc[]>([
-    { title: "API Testing Checklist", viewedAt: "2 hours ago", type: "PDF" },
-    { title: "Employee Handbook 2026", viewedAt: "Yesterday", type: "PDF" },
-    { title: "WAPT Methodology Guide", viewedAt: "3 days ago", type: "DOC" },
-  ])
+  const [recentDocs, setRecentDocs] = useState<RecentDoc[]>([])
 
   useEffect(() => {
-    if (userEmail) {
-      const stored = localStorage.getItem(`recent_docs_${userEmail}`)
-      if (stored) {
-        setRecentDocs(JSON.parse(stored))
+    const fetchRecentActivities = async () => {
+      const token = localStorage.getItem("auth_token")
+      if (token) {
+        try {
+          const response = await fetch("http://localhost:8000/api/recent-activities/", {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+          if (response.ok) {
+            const data = await response.json()
+            setRecentDocs(data.map((item: any) => ({
+              title: item.title,
+              type: item.doc_type,
+              timestamp: item.timestamp
+            })))
+          }
+        } catch (error) {
+          console.error("Failed to fetch recent activities:", error)
+        }
       }
     }
-  }, [userEmail])
+    fetchRecentActivities()
+  }, [])
 
   const [announcementsList, setAnnouncementsList] = useState<Announcement[]>([])
   const [isAdding, setIsAdding] = useState(false)

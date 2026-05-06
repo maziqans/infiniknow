@@ -28,3 +28,4 @@ class RecentActivitySerializer(serializers.ModelSerializer):
     class Meta:
         model = RecentActivity
         fields = '__all__'
+        read_only_fields = ['user']

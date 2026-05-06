@@ -22,11 +22,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 interface UserProfile {
   name: string
   email: string
-  ic: string
-  personalEmail: string
+  ic_number: string
+  personal_email: string
+  role?: string
   position: string
   address: string
-  phoneNo: string
+  phone_number: string
   department: string
 }
 
@@ -41,20 +42,20 @@ export function ProfileContent({ user, onBack }: ProfileContentProps) {
     position: "Senior Analyst",
     department: "Cybersecurity Division",
     email: "alex.smith@infinicore.com.my",
-    ic: "******-**-5678",
-    personalEmail: "alex.smith.personal@gmail.com",
+    ic_number: "******-**-5678",
+    personal_email: "alex.smith.personal@gmail.com",
     address: "123 Main Street, Apt 4B, Kuala Lumpur, 50450",
-    phoneNo: "+60 12-345 6789"
+    phone_number: "+60 12-345 6789"
   }
 
   const [isEditing, setIsEditing] = useState(false)
-  const [personalEmail, setPersonalEmail] = useState(displayUser.personalEmail)
+  const [personalEmail, setPersonalEmail] = useState(displayUser.personal_email)
   const [homeAddress, setHomeAddress] = useState(displayUser.address)
 
   useEffect(() => {
-    setPersonalEmail(displayUser.personalEmail)
+    setPersonalEmail(displayUser.personal_email)
     setHomeAddress(displayUser.address)
-  }, [displayUser.personalEmail, displayUser.address])
+  }, [displayUser.personal_email, displayUser.address])
 
   const handleSave = () => {
     setIsEditing(false)
@@ -189,7 +190,7 @@ export function ProfileContent({ user, onBack }: ProfileContentProps) {
                     <Lock className="h-3 w-3 text-muted-foreground/50" />
                   </Label>
                   <div className="p-3 rounded-lg bg-secondary/50 text-foreground font-medium">
-                    {displayUser.ic}
+                    {displayUser.ic_number}
                   </div>
                 </div>
               </div>
