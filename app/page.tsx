@@ -25,46 +25,15 @@ const CompanyStructureContent = dynamic(
 )
 
 interface UserProfile {
-  name: string
-  email: string
-  ic: string
-  personalEmail: string
+  name: string;
+  email: string;
+  ic_number: string;
+  personal_email: string;
   position: string
-  address: string
-  phoneNo: string
-  department: string
+  address: string;
+  phone_number: string;
+  department: string;
 }
-
-const mockDatabase = [
-  {
-    email: "ammar@infinicore.com.my",
-    password: "123pass",
-    profile: {
-      name: "Ammar Haziq Bin Annas",
-      email: "ammar@infinicore.com.my",
-      ic: "012345-67-8910",
-      personalEmail: "ammar@gmail.com",
-      position: "Chief Technology Officer",
-      address: "No. 1 Jalan kampung, sekyen 67, Shah Alam, 40000, Selangor, Malaysia",
-      phoneNo: "0123456789",
-      department: "Technical",
-    },
-  },
-  {
-    email: "user1@infinicore.com.my",
-    password: "123pass",
-    profile: {
-      name: "Adam Najmi",
-      email: "user1@infinicore.com.my",
-      ic: "980101-14-5555",
-      personalEmail: "adam.najmi.design@gmail.com",
-      position: "Graphic Designer",
-      address: "B-12-04, Residensi Wangsa, Wangsa Maju, 53300 Kuala Lumpur",
-      phoneNo: "011-2345678",
-      department: "Marketing",
-    },
-  },
-]
 
 export default function InfiniKnowPortal() {
   const [activeItem, setActiveItem] = useState("home")
@@ -78,9 +47,24 @@ export default function InfiniKnowPortal() {
   useEffect(() => {
     setIsMounted(true)
     // Check for existing session in local storage for demo purposes
-    const savedSession = localStorage.getItem("portal_user")
-    if (savedSession) {
-      setUser(JSON.parse(savedSession))
+    const token = localStorage.getItem("auth_token")
+    if (token) {
+      fetchUserProfile(token);
+    }
+  }, [])
+
+  const fetchUserProfile = async (token: string) => {
+    // This endpoint assumes you have a view that returns the logged-in user's profile
+    // You will need to create this view in Django.
+    const response = await fetch("http://localhost:8000/api/me/", {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.ok) {
+      const profileData = await response.json();
+      // Map Django's snake_case to frontend's camelCase if needed, or just use snake_case
+      setUser({ ...profileData.user, ...profileData });
+    } else {
+      handleLogout(); // Token is invalid or expired
     }
   }, [])
 
@@ -93,26 +77,35 @@ export default function InfiniKnowPortal() {
 
   const goHome = () => setActiveItem("home")
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    const foundUser = mockDatabase.find(
-      (u) => u.email === email && u.password === password
-    )
+    setLoginError("");
 
-    if (foundUser) {
-      setUser(foundUser.profile)
-      localStorage.setItem("portal_user", JSON.stringify(foundUser.profile))
-      setActiveItem("home")
-      setLoginError("")
-    } else {
-      setLoginError("Invalid email or password")
+    try {
+      const response = await fetch("http://localhost:8000/api/token/", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: email, password: password })
+      });
+
+      if (response.ok) {
+        const { access } = await response.json();
+        localStorage.setItem("auth_token", access);
+        await fetchUserProfile(access);
+        setActiveItem("home");
+      } else {
+        const errorData = await response.json();
+        setLoginError(errorData.detail || "Invalid email or password");
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      setLoginError("Could not connect to the server.");
     }
   }
 
   const handleLogout = () => {
     setUser(null)
-    localStorage.removeItem("portal_user")
+    localStorage.removeItem("auth_token")
   }
 
   const renderContent = () => {

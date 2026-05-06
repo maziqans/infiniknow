@@ -21,39 +21,12 @@ import { Badge } from "@/components/ui/badge"
 
 interface Announcement {
   id: string
-  title: string
-  date: string
-  preview: string
-  content?: string
-  isNew: boolean
+  title: string;
+  preview: string;
+  content?: string;
+  is_new: boolean;
+  created_at: string;
 }
-
-const defaultAnnouncements: Announcement[] = [
-  {
-    id: "1",
-    title: "Q2 Town Hall Meeting Scheduled",
-    date: "May 5, 2026",
-    preview: "Join us for our quarterly town hall on May 15th at 2:00 PM EST...",
-    content: "Join us for our quarterly town hall on May 15th at 2:00 PM EST. We will be discussing Q2 performance, upcoming project milestones, and introducing new team members. Please submit your questions in advance via the HR portal.",
-    isNew: true,
-  },
-  {
-    id: "2",
-    title: "New Security Training Available",
-    date: "May 3, 2026",
-    preview: "Mandatory cybersecurity awareness training is now available...",
-    content: "Mandatory cybersecurity awareness training is now available on the learning management system. All employees are required to complete this module by the end of the month. Failure to do so may result in suspended network access.",
-    isNew: true,
-  },
-  {
-    id: "3",
-    title: "Office Renovation Update",
-    date: "May 1, 2026",
-    preview: "Phase 2 of the office renovation will begin next week...",
-    content: "Phase 2 of the office renovation will begin next week. The east wing of the 4th floor will be closed. Affected employees have been notified of their temporary seating arrangements. Thank you for your patience.",
-    isNew: false,
-  },
-]
 
 interface QuickAccessCardProps {
   icon: React.ReactNode
@@ -145,41 +118,61 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
     userPosition?.toLowerCase().includes("cto")
 
   useEffect(() => {
-    const stored = localStorage.getItem("portal_announcements")
-    if (stored) {
-      setAnnouncementsList(JSON.parse(stored))
-    } else {
-      setAnnouncementsList(defaultAnnouncements)
-      localStorage.setItem("portal_announcements", JSON.stringify(defaultAnnouncements))
-    }
+    const fetchAnnouncements = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/announcements/");
+        if (response.ok) {
+          const data = await response.json();
+          setAnnouncementsList(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch announcements:", error);
+      }
+    };
+    fetchAnnouncements();
   }, [])
 
-  const handleAddAnnouncement = (e: React.FormEvent) => {
+  const handleAddAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newTitle.trim() || !newContent.trim()) return
     
     const previewText = newContent.length > 80 ? newContent.substring(0, 80) + "..." : newContent;
-    const newAnnouncement: Announcement = {
-      id: Date.now().toString(),
+    const newAnnouncementData = {
       title: newTitle,
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       preview: previewText,
       content: newContent,
-      isNew: true
+      is_new: true
+    };
+
+    const token = localStorage.getItem("auth_token");
+    const response = await fetch("http://localhost:8000/api/announcements/", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(newAnnouncementData)
+    });
+
+    if (response.ok) {
+      const createdAnnouncement = await response.json();
+      setAnnouncementsList([createdAnnouncement, ...announcementsList]);
+      setIsAdding(false);
+      setNewTitle("");
+      setNewContent("");
     }
-    const updated = [newAnnouncement, ...announcementsList]
-    setAnnouncementsList(updated)
-    localStorage.setItem("portal_announcements", JSON.stringify(updated))
-    setIsAdding(false)
-    setNewTitle("")
-    setNewContent("")
   }
 
-  const handleDeleteAnnouncement = (id: string, e: React.MouseEvent) => {
+  const handleDeleteAnnouncement = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    const updated = announcementsList.filter(a => a.id !== id)
-    setAnnouncementsList(updated)
-    localStorage.setItem("portal_announcements", JSON.stringify(updated))
+    const token = localStorage.getItem("auth_token");
+    const response = await fetch(`http://localhost:8000/api/announcements/${id}/`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.status === 204) { // No Content
+      setAnnouncementsList(announcementsList.filter(a => a.id !== id));
+    }
   }
 
   return (
@@ -205,7 +198,7 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
               </div>
               <div className="hidden lg:flex items-center gap-6">
                 <div className="text-center px-6 py-4 bg-white/80 backdrop-blur-sm rounded-lg shadow-sm border border-white/50">
-                  <p className="text-3xl font-bold text-red">{announcementsList.filter(a => a.isNew).length}</p>
+                  <p className="text-3xl font-bold text-red">{announcementsList.filter(a => a.is_new).length}</p>
                   <p className="text-xs text-muted-foreground font-medium">New Announcements</p>
                 </div>
                 <div className="text-center px-6 py-4 bg-white/80 backdrop-blur-sm rounded-lg shadow-sm border border-white/50">
@@ -327,7 +320,7 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
                           <h4 className="font-semibold text-foreground group-hover:text-red transition-colors">
                             {item.title}
                           </h4>
-                          {item.isNew && (
+                        {item.is_new && (
                             <Badge className="bg-red text-white text-xs px-1.5 py-0">New</Badge>
                           )}
                         </div>
@@ -337,7 +330,7 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <span className="text-xs text-muted-foreground whitespace-nowrap bg-background/50 px-2 py-1 rounded">
-                          {item.date}
+                        {new Date(item.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                         {canManageAnnouncements && (
                           <button 
