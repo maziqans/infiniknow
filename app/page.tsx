@@ -16,6 +16,7 @@ import { AnnouncementsContent } from "@/components/announcements-content"
 import { PortalFooter } from "@/components/portal-footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { AlertTriangle } from "lucide-react"
 
 // Dynamically import components that use non-SSR safe libraries (like react-organizational-chart)
 // This guarantees they are only evaluated and loaded in the browser.
@@ -44,6 +45,8 @@ export default function InfiniKnowPortal() {
   const [password, setPassword] = useState("")
   const [loginError, setLoginError] = useState("")
   const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null)
+  const [showWarning, setShowWarning] = useState(false)
+  const [dontShowAgain, setDontShowAgain] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
@@ -53,6 +56,12 @@ export default function InfiniKnowPortal() {
       fetchUserProfile(token);
     }
   }, [])
+
+  useEffect(() => {
+    if (user && localStorage.getItem("hide_security_warning") !== "true") {
+      setShowWarning(true)
+    }
+  }, [user])
 
   const fetchUserProfile = async (token: string) => {
     // This endpoint assumes you have a view that returns the logged-in user's profile
@@ -111,6 +120,13 @@ export default function InfiniKnowPortal() {
   const handleLogout = () => {
     setUser(null)
     localStorage.removeItem("auth_token")
+  }
+
+  const handleProceed = () => {
+    if (dontShowAgain) {
+      localStorage.setItem("hide_security_warning", "true")
+    }
+    setShowWarning(false)
   }
 
   const renderContent = () => {
@@ -235,6 +251,45 @@ export default function InfiniKnowPortal() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden animate-in fade-in duration-500">
+      {showWarning && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="bg-background border-2 border-red max-w-lg w-full p-8 rounded-lg shadow-[0_0_50px_rgba(220,20,60,0.3)] relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-red animate-pulse" />
+            <div className="flex items-center gap-4 text-red mb-6">
+              <AlertTriangle className="h-10 w-10 animate-bounce" />
+              <h2 className="text-2xl font-black uppercase tracking-widest text-red">Security Warning</h2>
+            </div>
+            <div className="space-y-4 text-foreground mb-8">
+              <p className="font-semibold text-lg border-b border-border pb-4">
+                RESTRICTED SYSTEM ACCESS
+              </p>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                By proceeding, you acknowledge that you are accessing a secure corporate network. <strong>All activities, including file access, navigation, and searches, are actively monitored, logged, and audited in real-time.</strong>
+              </p>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Unauthorized access, data exfiltration, or attempts to circumvent security controls will be immediately flagged to the cybersecurity response team and may result in severe disciplinary action, immediate termination, or criminal prosecution.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 mb-8 bg-red/5 p-4 rounded-md border border-red/20">
+              <input 
+                type="checkbox" 
+                id="dontShowAgain" 
+                className="w-5 h-5 accent-red cursor-pointer"
+                checked={dontShowAgain}
+                onChange={(e) => setDontShowAgain(e.target.checked)}
+              />
+              <label htmlFor="dontShowAgain" className="text-sm font-medium text-foreground cursor-pointer select-none">
+                I understand. Do not show this warning again.
+              </label>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={handleProceed} className="bg-red hover:bg-red/90 text-white font-bold px-8 py-2 w-full sm:w-auto h-auto text-base uppercase tracking-wide">
+                Proceed
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       <PortalHeader user={user} onNavigate={handleItemClick} onLogout={handleLogout} />
       <div className="flex flex-1 overflow-hidden">
         <PortalSidebar activeItem={activeItem} onItemClick={handleItemClick} />
