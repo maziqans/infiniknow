@@ -39,10 +39,21 @@ const guidelinesData: Record<string, { title: string; description: string; icon:
         author: "OWASP WSTG",
         date: "Latest Version",
         readTime: "15 min read",
-        content: `Information gathering is the first and most critical phase of a penetration test. It provides the foundation for all subsequent testing phases.
+        content: `Information gathering is the first and most critical phase of a penetration test. It provides the foundation for all subsequent testing phases by allowing the tester to build a comprehensive profile of the target application.
 
 ## Overview
-The goal of information gathering is to map the target application's attack surface, understand its underlying technologies, and identify potential entry points for further exploitation.
+The primary goal of information gathering is to map the target application's attack surface, understand its underlying technologies, and identify potential entry points for further exploitation. A thorough reconnaissance phase often determines the success or failure of the entire penetration test. By analyzing how the application behaves, what frameworks it uses, and how it interacts with the user, security professionals can tailor their attacks to the specific environment.
+
+## Detailed Testing Areas
+
+### Search Engine Discovery
+Attackers and testers alike use search engines to discover sensitive information leaked by the application. This includes finding indexed administrative interfaces, backup files, or internal documents that should not be publicly accessible.
+
+### Fingerprinting the Server and Framework
+Identifying the exact version of the web server (like Apache or Nginx) and the application framework (like React, Django, or Laravel) allows testers to search for known vulnerabilities and exploits specific to those versions.
+
+### Application Entry Points
+Mapping execution paths means finding every single input field, URL parameter, API endpoint, and HTTP header that the application processes. Every entry point is a potential vector for injection attacks.
 
 ## Testing Checklist
 
@@ -70,10 +81,21 @@ The goal of information gathering is to map the target application's attack surf
         author: "OWASP WSTG",
         date: "Latest Version",
         readTime: "12 min read",
-        content: `Misconfigurations at the network, platform, or application level are among the most common vulnerabilities exploited by attackers.
+        content: `Misconfigurations at the network, platform, or application level are among the most common vulnerabilities exploited by attackers. Secure configuration management is essential for defense in depth.
 
 ## Overview
-This phase verifies that the application and its environment are configured securely, following the principle of least privilege and defense in depth.
+This phase verifies that the application and its environment are configured securely, following the principle of least privilege. Even the most securely written code can be compromised if the underlying web server or cloud storage bucket is improperly configured. Testers look for forgotten files, default passwords, and overly permissive security headers.
+
+## Core Concepts
+
+### Administrative Interfaces
+Administrative panels should never be exposed to the public internet without strict access controls, IP whitelisting, or VPN requirements. Testers actively enumerate directories to find hidden management portals.
+
+### Security Headers
+HTTP headers like Content Security Policy (CSP), HTTP Strict Transport Security (HSTS), and X-Frame-Options provide modern browsers with instructions on how to handle the application securely. Missing headers leave users vulnerable to Cross-Site Scripting (XSS) and Clickjacking.
+
+### Cloud Storage and File Permissions
+Misconfigured AWS S3 buckets or open directory listings on web servers often leak sensitive customer data, source code, or internal company documents.
 
 ## Testing Checklist
 
@@ -101,10 +123,21 @@ This phase verifies that the application and its environment are configured secu
         author: "OWASP WSTG",
         date: "Latest Version",
         readTime: "20 min read",
-        content: `Authentication is the process of verifying that an individual, entity, or website is who it claims to be.
+        content: `Authentication is the critical process of verifying that an individual, entity, or website is exactly who it claims to be. It is the front door to any secure application.
 
 ## Overview
-Flaws in authentication can allow an attacker to bypass login controls, assume the identity of other users, or completely compromise the application.
+Flaws in authentication can allow an attacker to bypass login controls entirely, assume the identity of other users, or completely compromise the administrative functions of the application. A robust authentication mechanism is the foundation of user security.
+
+## Vulnerability Vectors
+
+### Default and Weak Credentials
+Many systems are deployed with default usernames and passwords. If not changed, attackers can gain immediate, unrestricted access. Furthermore, failing to enforce strong password policies allows attackers to easily guess user credentials through brute-force attacks.
+
+### Credential Transport
+If credentials are transmitted over unencrypted HTTP channels instead of secure HTTPS, anyone monitoring the network traffic can intercept the username and password in plain text.
+
+### Account Lockout Mechanisms
+Without a proper account lockout policy (e.g., locking the account after 5 failed attempts), an attacker can continuously attempt to guess a password using automated tools until they succeed.
 
 ## Testing Checklist
 
@@ -126,10 +159,21 @@ Flaws in authentication can allow an attacker to bypass login controls, assume t
         author: "OWASP WSTG",
         date: "Latest Version",
         readTime: "18 min read",
-        content: `Authorization follows authentication and dictates what actions a user is allowed to perform.
+        content: `Authorization directly follows authentication. While authentication verifies who you are, authorization dictates what you are allowed to see and do within the application.
 
 ## Overview
-Testing authorization involves verifying that users cannot access resources or perform actions that they are not explicitly permitted to access. This includes horizontal and vertical privilege escalation.
+Testing authorization involves verifying that users cannot access resources or perform actions that they are not explicitly permitted to perform. Access control failures are frequently rated as the most critical web application security risk because they often lead directly to data breaches.
+
+## Core Concepts and Escalation Paths
+
+### Horizontal Privilege Escalation
+This occurs when a user accesses the resources of another user who has the exact same level of privileges. For example, User A manipulates a URL parameter to view User B's private billing information. This is commonly referred to as Insecure Direct Object References (IDOR).
+
+### Vertical Privilege Escalation
+This represents a complete breakdown of roles, where a standard, low-level user manages to access features reserved for administrators or higher-tier users. This could involve accessing a hidden /admin dashboard or modifying a hidden form field to upgrade their own account status.
+
+### Directory Traversal
+Attackers manipulate file paths to access files and directories stored outside the intended web root folder. By using dot-dot-slash (../) sequences, an attacker might read sensitive system files, configuration files, or even password hashes directly from the server.
 
 ## Testing Checklist
 
@@ -138,9 +182,11 @@ Testing authorization involves verifying that users cannot access resources or p
 - [ ] WSTG-ATHZ-03: Testing for Privilege Escalation
 - [ ] WSTG-ATHZ-04: Testing for Insecure Direct Object References (IDOR)
 
-### Privilege Escalation Types
-- **Horizontal**: Accessing resources of another user with the same role (e.g., viewing another user's profile).
-- **Vertical**: Accessing resources of a user with a higher role (e.g., a standard user accessing the admin panel).`,
+## Defense Strategies
+
+- Implement authorization checks at the server level, never trusting client-side hidden fields
+- Use indirect object references (like random GUIDs) instead of predictable, sequential database IDs
+- Deny access by default and explicitly grant permission to specific roles`,
       },
       {
         id: "wapt-inpv",
@@ -149,10 +195,21 @@ Testing authorization involves verifying that users cannot access resources or p
         author: "OWASP WSTG",
         date: "Latest Version",
         readTime: "25 min read",
-        content: `Input validation testing is arguably the most common type of web application security testing.
+        content: `Input validation testing represents the core of traditional application security testing. It operates on a single, fundamental rule: Never trust user input.
 
 ## Overview
-Failure to properly validate input can lead to a wide variety of vulnerabilities, including Cross-Site Scripting (XSS), SQL Injection, and OS Command Injection.
+Failure to properly validate, sanitize, and encode input can lead to a wide variety of devastating vulnerabilities. If an application blindly accepts data from a user and processes it in a database, operating system shell, or web browser, it opens the door to injection attacks.
+
+## Common Injection Vulnerabilities
+
+### Cross-Site Scripting (XSS)
+When an application includes untrusted data in a web page without proper validation or escaping, attackers can execute malicious JavaScript in the victim's browser. This can lead to hijacked user sessions, defaced web sites, or redirected users. XSS is divided into Reflected, Stored, and DOM-based variants.
+
+### SQL Injection (SQLi)
+SQL Injection occurs when untrusted user input is sent directly to a backend database without being parameterized. This allows attackers to modify the SQL query logic to bypass logins, extract the entire database, modify records, or drop tables completely.
+
+### Command Injection
+If an application passes user input directly to the host operating system's command shell (for example, to ping an IP address), an attacker can append their own system commands. This often results in a complete system takeover.
 
 ## Testing Checklist
 
