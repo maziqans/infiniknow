@@ -28,22 +28,18 @@ interface OnboardingItem {
 }
 
 interface OnboardingContentProps {
+  userRole?: string
   userPosition?: string
   userDepartment?: string
   onBack: () => void
 }
 
-export function OnboardingContent({ userPosition, userDepartment, onBack }: OnboardingContentProps) {
+export function OnboardingContent({ userRole, userPosition, userDepartment, onBack }: OnboardingContentProps) {
   const [onboardingItems, setOnboardingItems] = useState<OnboardingItem[]>([])
   const [favorites, setFavorites] = useState<any[]>([])
   const [viewDocument, setViewDocument] = useState<{title: string, url: string} | null>(null)
 
-  const canManageOnboarding = 
-    userDepartment?.toLowerCase().includes("admin") ||
-    userPosition?.toLowerCase().includes("chief") ||
-    userPosition?.toLowerCase().includes("c-level") ||
-    userPosition?.toLowerCase().includes("ceo") ||
-    userPosition?.toLowerCase().includes("cto")
+  const canManageOnboarding = userRole === 'Admin' || userDepartment?.toLowerCase().includes("admin")
 
   useEffect(() => {
     const fetchItems = async () => {

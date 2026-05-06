@@ -188,6 +188,7 @@ export default function InfiniKnowPortal() {
       case "onboarding":
         return (
           <OnboardingContent 
+            userRole={user?.role}
             userPosition={user?.position} 
             userDepartment={user?.department} 
             onBack={goHome} 
