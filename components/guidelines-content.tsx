@@ -383,7 +383,7 @@ export function GuidelinesContent({ guidelineType, onBack }: GuidelinesContentPr
   const handleArticleClick = (article: GuidelineArticle) => {
     setSelectedArticle(article)
     
-    const token = localStorage.getItem("auth_token")
+    const token = sessionStorage.getItem("auth_token")
     if (token) {
       try {
         fetch("http://localhost:8000/api/recent-activities/", {

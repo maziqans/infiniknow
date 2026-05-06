@@ -94,7 +94,7 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
 
   useEffect(() => {
     const fetchRecentActivities = async () => {
-      const token = localStorage.getItem("auth_token")
+      const token = sessionStorage.getItem("auth_token")
       if (token) {
         try {
           const response = await fetch("http://localhost:8000/api/recent-activities/", {
@@ -155,7 +155,7 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
       is_new: true
     };
 
-    const token = localStorage.getItem("auth_token");
+    const token = sessionStorage.getItem("auth_token");
     const response = await fetch("http://localhost:8000/api/announcements/", {
       method: 'POST',
       headers: {
@@ -176,7 +176,7 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
 
   const handleDeleteAnnouncement = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    const token = localStorage.getItem("auth_token");
+    const token = sessionStorage.getItem("auth_token");
     const response = await fetch(`http://localhost:8000/api/announcements/${id}/`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }

@@ -77,7 +77,7 @@ export function AnnouncementsContent({
       is_new: true
     };
 
-    const token = localStorage.getItem("auth_token");
+    const token = sessionStorage.getItem("auth_token");
     const response = await fetch("http://localhost:8000/api/announcements/", {
       method: 'POST',
       headers: {
@@ -98,7 +98,7 @@ export function AnnouncementsContent({
 
   const handleDeleteAnnouncement = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    const token = localStorage.getItem("auth_token");
+    const token = sessionStorage.getItem("auth_token");
     const response = await fetch(`http://localhost:8000/api/announcements/${id}/`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }

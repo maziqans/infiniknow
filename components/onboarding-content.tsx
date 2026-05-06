@@ -60,7 +60,7 @@ export function OnboardingContent({ userPosition, userDepartment, onBack }: Onbo
   }
 
   const handleRemoveFile = async (itemId: string) => {
-    const token = localStorage.getItem("auth_token");
+    const token = sessionStorage.getItem("auth_token");
     try {
       const response = await fetch(`http://localhost:8000/api/onboarding-items/${itemId}/`, {
         method: 'PATCH',

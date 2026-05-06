@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import dynamic from "next/dynamic"
 import Image from "next/image"
 import { PortalHeader } from "@/components/portal-header"
@@ -47,11 +47,15 @@ export default function InfiniKnowPortal() {
   const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null)
   const [showWarning, setShowWarning] = useState(false)
   const [dontShowAgain, setDontShowAgain] = useState(false)
+  const [showIdlePrompt, setShowIdlePrompt] = useState(false)
+  const [idleCountdown, setIdleCountdown] = useState(30)
+  const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const countdownInterval = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     setIsMounted(true)
-    // Check for existing session in local storage for demo purposes
-    const token = localStorage.getItem("auth_token")
+    // Check for existing session in session storage (clears on tab close)
+    const token = sessionStorage.getItem("auth_token")
     if (token) {
       fetchUserProfile(token);
     }
@@ -104,7 +108,7 @@ export default function InfiniKnowPortal() {
 
       if (response.ok) {
         const { access } = await response.json();
-        localStorage.setItem("auth_token", access);
+        sessionStorage.setItem("auth_token", access);
         await fetchUserProfile(access);
         setActiveItem("home");
       } else {
@@ -119,7 +123,8 @@ export default function InfiniKnowPortal() {
 
   const handleLogout = () => {
     setUser(null)
-    localStorage.removeItem("auth_token")
+    sessionStorage.removeItem("auth_token")
+    setShowIdlePrompt(false)
   }
 
   const handleProceed = () => {
@@ -128,6 +133,52 @@ export default function InfiniKnowPortal() {
     }
     setShowWarning(false)
   }
+
+  const handleStayLoggedIn = () => {
+    setShowIdlePrompt(false)
+  }
+
+  // Inactivity timeout logic
+  useEffect(() => {
+    if (!user) return
+
+    const IDLE_TIMEOUT_MS = 30 * 60 * 1000 // 30 minutes
+    const COUNTDOWN_SECONDS = 30
+
+    const resetInactivityTimeout = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current)
+      inactivityTimer.current = setTimeout(() => {
+        setShowIdlePrompt(true)
+        setIdleCountdown(COUNTDOWN_SECONDS)
+      }, IDLE_TIMEOUT_MS)
+    }
+
+    if (!showIdlePrompt) {
+      const handleActivity = () => resetInactivityTimeout()
+      const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll']
+      events.forEach(e => window.addEventListener(e, handleActivity))
+      resetInactivityTimeout()
+
+      return () => {
+        events.forEach(e => window.removeEventListener(e, handleActivity))
+        if (inactivityTimer.current) clearTimeout(inactivityTimer.current)
+      }
+    } else {
+      countdownInterval.current = setInterval(() => {
+        setIdleCountdown((prev) => {
+          if (prev <= 1) {
+            handleLogout()
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      return () => {
+        if (countdownInterval.current) clearInterval(countdownInterval.current)
+      }
+    }
+  }, [user, showIdlePrompt])
 
   const renderContent = () => {
     switch (activeItem) {
@@ -251,6 +302,25 @@ export default function InfiniKnowPortal() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden animate-in fade-in duration-500">
+      {showIdlePrompt && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="bg-background border border-border max-w-sm w-full p-6 rounded-xl shadow-2xl text-center">
+            <AlertTriangle className="h-10 w-10 text-amber-500 mx-auto mb-4 animate-pulse" />
+            <h2 className="text-xl font-bold text-foreground mb-2">Are you still there?</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              You have been inactive for a while. For your security, you will be automatically logged out in <strong className="text-red text-base">{idleCountdown}</strong> seconds.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button variant="outline" onClick={handleLogout} className="w-full sm:w-auto">
+                Log Out Now
+              </Button>
+              <Button onClick={handleStayLoggedIn} className="bg-red hover:bg-red/90 text-white w-full sm:w-auto">
+                I'm Here
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       {showWarning && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300">
           <div className="bg-background border border-border max-w-md w-full p-6 rounded-xl shadow-2xl relative overflow-hidden">
