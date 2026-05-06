@@ -22,9 +22,9 @@ interface PortalHeaderProps {
 
 export function PortalHeader({ user, onNavigate, onLogout }: PortalHeaderProps) {
   return (
-    <header className="bg-navy hexagon-pattern relative">
-      {/* Gradient overlay for depth */}
-      <div className="absolute inset-0 bg-linear-to-r from-[#0B1C33]/95 via-[#0B1C33]/85 to-[#0B1C33]/95" />
+    <header className="bg-white relative border-b border-border shadow-sm">
+      {/* Subtle gradient overlay strictly on the bottom edge */}
+      <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
       
       <div className="relative z-10 flex items-center justify-between px-6 py-4">
         {/* Left - Logo and Title */}
@@ -37,8 +37,8 @@ export function PortalHeader({ user, onNavigate, onLogout }: PortalHeaderProps) 
             className="h-10 w-auto object-contain" 
           />
           <div className="flex flex-col">
-            <span className="text-xl font-bold text-white tracking-wide">INFINIKNOW</span>
-            <span className="text-xs text-white/70 tracking-widest uppercase">Internal Portal</span>
+            <span className="text-xl font-bold text-navy tracking-wide">INFINIKNOW</span>
+            <span className="text-xs text-navy/70 tracking-widest uppercase">Internal Portal</span>
           </div>
         </div>
 
@@ -57,9 +57,9 @@ export function PortalHeader({ user, onNavigate, onLogout }: PortalHeaderProps) 
         {/* Right - User Profile and Access Banner */}
         <div className="flex items-center gap-6">
           {/* Access Banner */}
-          <div className="hidden lg:flex items-center gap-2 bg-red/20 border border-red/40 rounded-lg px-4 py-2">
+          <div className="hidden lg:flex items-center gap-2 bg-red/10 border border-red/20 rounded-lg px-4 py-2">
             <Shield className="h-4 w-4 text-red" />
-            <span className="text-xs font-semibold text-white uppercase tracking-wide">
+            <span className="text-xs font-semibold text-red uppercase tracking-wide">
               Access: Internal Staff Extranet Only
             </span>
           </div>
@@ -67,18 +67,18 @@ export function PortalHeader({ user, onNavigate, onLogout }: PortalHeaderProps) 
           {/* User Profile Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-3 px-2 py-1.5 h-auto hover:bg-white/10">
+              <Button variant="ghost" className="flex items-center gap-3 px-2 py-1.5 h-auto hover:bg-black/5">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-white">{user?.name || "Alex Smith"}</p>
-                  <p className="text-xs text-white/60">{user?.position || "Senior Analyst"}</p>
+                  <p className="text-sm font-medium text-navy">{user?.name || "Alex Smith"}</p>
+                  <p className="text-xs text-muted-foreground">{user?.position || "Senior Analyst"}</p>
                 </div>
-                <Avatar className="h-10 w-10 border-2 border-white/30">
+                <Avatar className="h-10 w-10 border border-border shadow-sm">
                   <AvatarImage src="/placeholder-user.jpg" alt={user?.name || "Alex Smith"} />
                   <AvatarFallback className="bg-red text-white font-semibold">
                     {user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : "AS"}
                   </AvatarFallback>
                 </Avatar>
-                <ChevronDown className="h-4 w-4 text-white/70" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
