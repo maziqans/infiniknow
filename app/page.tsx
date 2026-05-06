@@ -40,7 +40,7 @@ export default function InfiniKnowPortal() {
   const [activeItem, setActiveItem] = useState("home")
   const [isMounted, setIsMounted] = useState(false)
   const [user, setUser] = useState<UserProfile | null>(null)
-  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loginError, setLoginError] = useState("")
   const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null)
@@ -90,7 +90,7 @@ export default function InfiniKnowPortal() {
       const response = await fetch("http://localhost:8000/api/token/", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username: email, password })
       });
 
       if (response.ok) {
@@ -100,7 +100,7 @@ export default function InfiniKnowPortal() {
         setActiveItem("home");
       } else {
         const errorData = await response.json();
-        setLoginError(errorData.detail || "Invalid username or password");
+        setLoginError(errorData.detail || "Invalid email or password");
       }
     } catch (error) {
       console.error("Login failed:", error);
@@ -199,14 +199,14 @@ export default function InfiniKnowPortal() {
           <CardContent className="pt-6">
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Username</label>
+                <label className="text-sm font-medium text-foreground">Email</label>
                 <input 
-                  type="text" 
+                  type="email" 
                   required
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-red focus:border-transparent" 
-                  placeholder="Enter your username" 
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter your email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
