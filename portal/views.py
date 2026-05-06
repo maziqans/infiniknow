@@ -1,8 +1,8 @@
 from rest_framework import viewsets, views
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import UserProfile, Announcement, OnboardingItem, RecentActivity
-from .serializers import UserProfileSerializer, AnnouncementSerializer, OnboardingItemSerializer, RecentActivitySerializer
+from .models import UserProfile, Announcement, OnboardingItem, RecentActivity, PolicyDocument
+from .serializers import UserProfileSerializer, AnnouncementSerializer, OnboardingItemSerializer, RecentActivitySerializer, PolicyDocumentSerializer
 
 class CurrentUserProfileView(views.APIView):
     permission_classes = [IsAuthenticated]
@@ -36,3 +36,7 @@ class RecentActivityViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+class PolicyDocumentViewSet(viewsets.ModelViewSet):
+    queryset = PolicyDocument.objects.all().order_by('-uploaded_at')
+    serializer_class = PolicyDocumentSerializer

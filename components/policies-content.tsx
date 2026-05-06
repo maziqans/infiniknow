@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   FileText,
   Download,
@@ -17,24 +17,10 @@ interface PolicyDocument {
   id: string
   title: string
   version: string
-  size: string
-  isNew?: boolean
+  file?: string | null
+  is_new: boolean
+  uploaded_at: string
 }
-
-const policies: PolicyDocument[] = [
-  { id: "1", title: "Employee Handbook 2026", version: "v3.0", size: "2.4 MB", isNew: true },
-  { id: "2", title: "Code of Conduct", version: "v2.5", size: "856 KB" },
-  { id: "3", title: "Remote Work Policy", version: "v3.2", size: "1.1 MB", isNew: true },
-  { id: "4", title: "Data Classification Guidelines", version: "v1.0", size: "945 KB", isNew: true },
-  { id: "5", title: "Information Security Policy", version: "v4.1", size: "1.8 MB" },
-  { id: "6", title: "Travel & Expense Policy", version: "v2.0", size: "1.2 MB" },
-  { id: "7", title: "Acceptable Use Policy", version: "v3.0", size: "678 KB" },
-  { id: "8", title: "Anti-Harassment Policy", version: "v2.2", size: "540 KB" },
-  { id: "9", title: "Intellectual Property Policy", version: "v1.5", size: "720 KB" },
-  { id: "10", title: "Business Continuity Plan", version: "v2.0", size: "3.2 MB" },
-  { id: "11", title: "Confidentiality Agreement", version: "v1.8", size: "320 KB" },
-  { id: "12", title: "IT Security Guidelines", version: "v2.3", size: "1.5 MB" },
-]
 
 interface PoliciesContentProps {
   onBack: () => void
@@ -42,6 +28,21 @@ interface PoliciesContentProps {
 
 export function PoliciesContent({ onBack }: PoliciesContentProps) {
   const [searchQuery, setSearchQuery] = useState("")
+  const [policies, setPolicies] = useState<PolicyDocument[]>([])
+
+  useEffect(() => {
+    const fetchPolicies = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/policy-documents/");
+        if (response.ok) {
+          setPolicies(await response.json());
+        }
+      } catch (error) {
+        console.error("Failed to fetch policies:", error);
+      }
+    };
+    fetchPolicies();
+  }, [])
 
   const filteredPolicies = policies.filter((policy) =>
     policy.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -115,27 +116,30 @@ export function PoliciesContent({ onBack }: PoliciesContentProps) {
                       <h3 className="font-semibold text-foreground group-hover:text-red transition-colors">
                         {policy.title}
                       </h3>
-                      {policy.isNew && (
+                      {policy.is_new && (
                         <Badge className="bg-red text-white text-xs px-1.5 py-0">New</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="text-xs text-muted-foreground">
-                        {policy.version}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {policy.size}
-                      </span>
+                      {policy.version && (
+                        <span className="text-xs text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded">
+                          {policy.version}
+                        </span>
+                      )}
+                      {policy.file && (
+                        <span className="text-xs text-green-600 font-medium">Document available</span>
+                      )}
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button size="sm" variant="ghost" className="h-9 w-9 p-0">
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                  <Button size="sm" variant="ghost" className="h-9 w-9 p-0">
-                    <Download className="h-4 w-4 text-muted-foreground" />
-                  </Button>
+                  {policy.file && (
+                    <Button size="sm" variant="ghost" className="h-9 w-9 p-0" asChild>
+                      <a href={policy.file} target="_blank" rel="noopener noreferrer">
+                        <Download className="h-4 w-4 text-muted-foreground hover:text-red" />
+                      </a>
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

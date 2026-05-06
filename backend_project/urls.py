@@ -21,12 +21,13 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from portal.views import UserProfileViewSet, AnnouncementViewSet, OnboardingItemViewSet, RecentActivityViewSet, CurrentUserProfileView
+from portal.views import UserProfileViewSet, AnnouncementViewSet, OnboardingItemViewSet, RecentActivityViewSet, CurrentUserProfileView, PolicyDocumentViewSet
 
 router = routers.DefaultRouter()
 router.register(r'user-profiles', UserProfileViewSet)
 router.register(r'announcements', AnnouncementViewSet)
 router.register(r'onboarding-items', OnboardingItemViewSet)
+router.register(r'policy-documents', PolicyDocumentViewSet)
 router.register(r'recent-activities', RecentActivityViewSet, basename='recentactivity')
 
 urlpatterns = [

@@ -50,3 +50,13 @@ class RecentActivity(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.title}"
+
+class PolicyDocument(models.Model):
+    title = models.CharField(max_length=200)
+    version = models.CharField(max_length=50, blank=True)
+    file = models.FileField(upload_to='policies/', blank=True, null=True)
+    is_new = models.BooleanField(default=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
