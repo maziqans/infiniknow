@@ -24,8 +24,11 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
     serializer_class = AnnouncementSerializer
 
 class OnboardingItemViewSet(viewsets.ModelViewSet):
-    queryset = OnboardingItem.objects.all().order_by('-uploaded_at')
     serializer_class = OnboardingItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return OnboardingItem.objects.filter(user=self.request.user).order_by('-uploaded_at')
 
 class RecentActivityViewSet(viewsets.ModelViewSet):
     serializer_class = RecentActivitySerializer

@@ -14,7 +14,8 @@ class AnnouncementAdmin(admin.ModelAdmin):
 
 @admin.register(OnboardingItem)
 class OnboardingItemAdmin(admin.ModelAdmin):
-    list_display = ('title', 'uploaded_at')
+    list_display = ('title', 'user', 'uploaded_at')
+    list_filter = ('user',)
 
 @admin.register(RecentActivity)
 class RecentActivityAdmin(admin.ModelAdmin):

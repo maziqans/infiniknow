@@ -47,15 +47,17 @@ export function OnboardingContent({ userPosition, userDepartment, onBack }: Onbo
 
   useEffect(() => {
     const fetchItems = async () => {
+      const token = sessionStorage.getItem("auth_token")
       try {
-        const response = await fetch("http://localhost:8000/api/onboarding-items/");
+        const response = await fetch("http://localhost:8000/api/onboarding-items/", {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         if (response.ok) {
           setOnboardingItems(await response.json());
         }
       } catch (error) {
         console.error("Failed to fetch onboarding items:", error);
       }
-      const token = sessionStorage.getItem("auth_token")
       if (token) {
         try {
           const favRes = await fetch("http://localhost:8000/api/favorites/", { headers: { 'Authorization': `Bearer ${token}` } })

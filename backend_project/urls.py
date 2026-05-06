@@ -26,7 +26,7 @@ from portal.views import UserProfileViewSet, AnnouncementViewSet, OnboardingItem
 router = routers.DefaultRouter()
 router.register(r'user-profiles', UserProfileViewSet)
 router.register(r'announcements', AnnouncementViewSet)
-router.register(r'onboarding-items', OnboardingItemViewSet)
+router.register(r'onboarding-items', OnboardingItemViewSet, basename='onboardingitem')
 router.register(r'policy-documents', PolicyDocumentViewSet)
 router.register(r'template-documents', TemplateDocumentViewSet, basename='templatedocument')
 router.register(r'recent-activities', RecentActivityViewSet, basename='recentactivity')
