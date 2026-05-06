@@ -216,11 +216,11 @@ export default function InfiniKnowPortal() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col animate-in fade-in duration-500">
+    <div className="h-screen flex flex-col overflow-hidden animate-in fade-in duration-500">
       <PortalHeader user={user} onNavigate={handleItemClick} onLogout={handleLogout} />
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         <PortalSidebar activeItem={activeItem} onItemClick={handleItemClick} />
-        <div key={activeItem} className="flex-1 flex flex-col animate-in fade-in duration-500">
+        <div key={activeItem} className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-500">
           {renderContent()}
         </div>
       </div>
