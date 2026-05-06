@@ -126,6 +126,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", # Your Next.js local development URL
+    "http://127.0.0.1:3000",
 ]
 
 REST_FRAMEWORK = {
