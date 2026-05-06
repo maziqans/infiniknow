@@ -67,7 +67,7 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
           })
           if (response.ok) {
             const data = await response.json()
-            setRecentDocs(data.map((item: any) => ({
+            setRecentDocs(data.slice(0, 5).map((item: any) => ({
               title: item.title,
               type: item.doc_type,
               timestamp: item.timestamp
@@ -185,10 +185,6 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
                 <div className="text-center px-6 py-4 bg-white/80 backdrop-blur-sm rounded-lg shadow-sm border border-white/50">
                   <p className="text-3xl font-bold text-red">{announcementsList.filter(a => a.is_new && !readAnnouncements.includes(a.id.toString())).length}</p>
                   <p className="text-xs text-muted-foreground font-medium">New Announcements</p>
-                </div>
-                <div className="text-center px-6 py-4 bg-white/80 backdrop-blur-sm rounded-lg shadow-sm border border-white/50">
-                  <p className="text-3xl font-bold text-navy">12</p>
-                  <p className="text-xs text-muted-foreground font-medium">Resources Updated</p>
                 </div>
               </div>
             </div>
