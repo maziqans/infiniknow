@@ -24,6 +24,7 @@ interface Announcement {
   title: string
   date: string
   preview: string
+  content?: string
   isNew: boolean
 }
 
@@ -33,6 +34,7 @@ const defaultAnnouncements: Announcement[] = [
     title: "Q2 Town Hall Meeting Scheduled",
     date: "May 5, 2026",
     preview: "Join us for our quarterly town hall on May 15th at 2:00 PM EST...",
+    content: "Join us for our quarterly town hall on May 15th at 2:00 PM EST. We will be discussing Q2 performance, upcoming project milestones, and introducing new team members. Please submit your questions in advance via the HR portal.",
     isNew: true,
   },
   {
@@ -40,6 +42,7 @@ const defaultAnnouncements: Announcement[] = [
     title: "New Security Training Available",
     date: "May 3, 2026",
     preview: "Mandatory cybersecurity awareness training is now available...",
+    content: "Mandatory cybersecurity awareness training is now available on the learning management system. All employees are required to complete this module by the end of the month. Failure to do so may result in suspended network access.",
     isNew: true,
   },
   {
@@ -47,6 +50,7 @@ const defaultAnnouncements: Announcement[] = [
     title: "Office Renovation Update",
     date: "May 1, 2026",
     preview: "Phase 2 of the office renovation will begin next week...",
+    content: "Phase 2 of the office renovation will begin next week. The east wing of the 4th floor will be closed. Affected employees have been notified of their temporary seating arrangements. Thank you for your patience.",
     isNew: false,
   },
 ]
@@ -88,6 +92,8 @@ interface DashboardProps {
   userEmail?: string
   userPosition?: string
   userDepartment?: string
+  onNavigate?: (page: string) => void
+  onAnnouncementClick?: (id: string) => void
 }
 
 interface RecentDoc {
@@ -110,7 +116,7 @@ function getTimeAgo(dateString?: string) {
   return `${days} days ago`
 }
 
-export function DashboardContent({ userName = "Alex Smith", userEmail, userPosition, userDepartment }: DashboardProps) {
+export function DashboardContent({ userName = "Alex Smith", userEmail, userPosition, userDepartment, onNavigate, onAnnouncementClick }: DashboardProps) {
   const [recentDocs, setRecentDocs] = useState<RecentDoc[]>([
     { title: "API Testing Checklist", viewedAt: "2 hours ago", type: "PDF" },
     { title: "Employee Handbook 2026", viewedAt: "Yesterday", type: "PDF" },
@@ -129,7 +135,7 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
   const [announcementsList, setAnnouncementsList] = useState<Announcement[]>([])
   const [isAdding, setIsAdding] = useState(false)
   const [newTitle, setNewTitle] = useState("")
-  const [newPreview, setNewPreview] = useState("")
+  const [newContent, setNewContent] = useState("")
 
   const canManageAnnouncements = 
     userDepartment?.toLowerCase().includes("admin") ||
@@ -150,12 +156,15 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
 
   const handleAddAnnouncement = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newTitle.trim() || !newPreview.trim()) return
+    if (!newTitle.trim() || !newContent.trim()) return
+    
+    const previewText = newContent.length > 80 ? newContent.substring(0, 80) + "..." : newContent;
     const newAnnouncement: Announcement = {
       id: Date.now().toString(),
       title: newTitle,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      preview: newPreview,
+      preview: previewText,
+      content: newContent,
       isNew: true
     }
     const updated = [newAnnouncement, ...announcementsList]
@@ -163,7 +172,7 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
     localStorage.setItem("portal_announcements", JSON.stringify(updated))
     setIsAdding(false)
     setNewTitle("")
-    setNewPreview("")
+    setNewContent("")
   }
 
   const handleDeleteAnnouncement = (id: string, e: React.MouseEvent) => {
@@ -255,19 +264,20 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
                 </div>
                 <CardTitle className="text-lg">Announcements</CardTitle>
               </div>
-              {canManageAnnouncements ? (
-                <Button 
-                  size="sm" 
-                  onClick={() => setIsAdding(!isAdding)} 
-                  className="bg-red hover:bg-red/90 text-white"
-                >
-                  {isAdding ? "Cancel" : "+ Add New"}
-                </Button>
-              ) : (
-                <Button variant="ghost" size="sm" className="text-red hover:text-red-hover hover:bg-red/5">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" className="text-red hover:text-red-hover hover:bg-red/5" onClick={() => onNavigate?.("announcements")}>
                   View All
                 </Button>
-              )}
+                {canManageAnnouncements && (
+                  <Button 
+                    size="sm" 
+                    onClick={() => setIsAdding(!isAdding)} 
+                    className="bg-red hover:bg-red/90 text-white"
+                  >
+                    {isAdding ? "Cancel" : "+ Add New"}
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="pt-0">
@@ -284,9 +294,9 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
                 <textarea 
                   placeholder="Announcement Details..." 
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-1 focus:ring-red resize-none"
-                  rows={2}
-                  value={newPreview}
-                  onChange={(e) => setNewPreview(e.target.value)}
+                  rows={3}
+                  value={newContent}
+                  onChange={(e) => setNewContent(e.target.value)}
                   required
                 />
                 <div className="flex justify-end gap-2">
@@ -305,9 +315,10 @@ export function DashboardContent({ userName = "Alex Smith", userEmail, userPosit
                   <p className="text-sm text-muted-foreground">No announcements available.</p>
                 </div>
               ) : (
-                announcementsList.map((item) => (
+                announcementsList.slice(0, 3).map((item) => (
                   <div
                     key={item.id}
+                    onClick={() => onAnnouncementClick?.(item.id)}
                     className="p-4 rounded-lg bg-secondary/40 hover:bg-secondary/70 transition-all duration-200 cursor-pointer group border-l-3 border-transparent hover:border-red"
                   >
                     <div className="flex items-start justify-between gap-4">
