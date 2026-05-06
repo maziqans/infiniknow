@@ -21,7 +21,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from portal.views import UserProfileViewSet, AnnouncementViewSet, OnboardingItemViewSet, RecentActivityViewSet, CurrentUserProfileView, PolicyDocumentViewSet, TemplateDocumentViewSet
+from portal.views import UserProfileViewSet, AnnouncementViewSet, OnboardingItemViewSet, RecentActivityViewSet, CurrentUserProfileView, PolicyDocumentViewSet, TemplateDocumentViewSet, FavoriteItemViewSet
 
 router = routers.DefaultRouter()
 router.register(r'user-profiles', UserProfileViewSet)
@@ -30,6 +30,7 @@ router.register(r'onboarding-items', OnboardingItemViewSet)
 router.register(r'policy-documents', PolicyDocumentViewSet)
 router.register(r'template-documents', TemplateDocumentViewSet, basename='templatedocument')
 router.register(r'recent-activities', RecentActivityViewSet, basename='recentactivity')
+router.register(r'favorites', FavoriteItemViewSet, basename='favorite')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

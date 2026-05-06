@@ -5,6 +5,8 @@ import {
   FileText,
   Download,
   Search,
+  Star,
+  Eye,
   ArrowLeft,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -30,6 +32,8 @@ interface TemplatesContentProps {
 export function TemplatesContent({ templateType, onBack }: TemplatesContentProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [templates, setTemplates] = useState<TemplateDocument[]>([])
+  const [favorites, setFavorites] = useState<any[]>([])
+  const [viewDocument, setViewDocument] = useState<{title: string, url: string} | null>(null)
 
   const titleMap = {
     word: "Word Templates",
@@ -47,9 +51,42 @@ export function TemplatesContent({ templateType, onBack }: TemplatesContentProps
       } catch (error) {
         console.error("Failed to fetch templates:", error);
       }
+      const token = sessionStorage.getItem("auth_token")
+      if (token) {
+        try {
+          const favRes = await fetch("http://localhost:8000/api/favorites/", { headers: { 'Authorization': `Bearer ${token}` } })
+          if (favRes.ok) setFavorites(await favRes.json())
+        } catch (error) {
+          console.error("Failed to fetch favorites:", error)
+        }
+      }
     };
     fetchTemplates();
   }, [templateType])
+
+  const toggleFavorite = async (template: TemplateDocument) => {
+    const token = sessionStorage.getItem("auth_token")
+    const existing = favorites.find(f => f.item_id === template.id.toString() && f.item_type === `template_${templateType}`)
+    if (existing) {
+      const res = await fetch(`http://localhost:8000/api/favorites/${existing.id}/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (res.status === 204) setFavorites(favorites.filter(f => f.id !== existing.id))
+    } else {
+      const res = await fetch("http://localhost:8000/api/favorites/", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          title: template.title,
+          item_type: `template_${templateType}`,
+          item_id: template.id.toString(),
+          file_url: template.file || ""
+        })
+      })
+      if (res.ok) setFavorites([await res.json(), ...favorites])
+    }
+  }
 
   const filteredTemplates = templates.filter((template) =>
     template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -137,12 +174,20 @@ export function TemplatesContent({ templateType, onBack }: TemplatesContentProps
                   </div>
                 </div>
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button size="sm" variant="ghost" className="h-9 w-9 p-0" onClick={() => toggleFavorite(template)}>
+                    <Star className={`h-4 w-4 ${favorites.some(f => f.item_id === template.id.toString() && f.item_type === `template_${templateType}`) ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground hover:text-amber-500'}`} />
+                  </Button>
                   {template.file && (
-                    <Button size="sm" variant="ghost" className="h-9 w-9 p-0" asChild>
-                      <a href={template.file} target="_blank" rel="noopener noreferrer">
-                        <Download className="h-4 w-4 text-muted-foreground hover:text-red" />
-                      </a>
-                    </Button>
+                    <>
+                      <Button size="sm" variant="ghost" className="h-9 w-9 p-0" onClick={() => setViewDocument({title: template.title, url: template.file!})}>
+                        <Eye className="h-4 w-4 text-muted-foreground hover:text-red" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-9 w-9 p-0" asChild>
+                        <a href={template.file} target="_blank" rel="noopener noreferrer">
+                          <Download className="h-4 w-4 text-muted-foreground hover:text-red" />
+                        </a>
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
@@ -157,6 +202,19 @@ export function TemplatesContent({ templateType, onBack }: TemplatesContentProps
           )}
         </CardContent>
       </Card>
+      {viewDocument && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="bg-background border border-border w-full max-w-5xl h-[85vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-border bg-muted/30">
+              <h2 className="text-lg font-semibold text-foreground truncate pr-4">{viewDocument.title}</h2>
+              <Button variant="ghost" size="sm" onClick={() => setViewDocument(null)}>Close</Button>
+            </div>
+            <div className="flex-1 bg-white">
+              <iframe src={viewDocument.url} className="w-full h-full border-0" />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

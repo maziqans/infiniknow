@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   ArrowLeft,
   Bug,
@@ -9,6 +9,7 @@ import {
   Code,
   Clock,
   User,
+  Star,
   ChevronRight,
   BookOpen,
 } from "lucide-react"
@@ -378,7 +379,19 @@ interface GuidelinesContentProps {
 
 export function GuidelinesContent({ guidelineType, onBack }: GuidelinesContentProps) {
   const [selectedArticle, setSelectedArticle] = useState<GuidelineArticle | null>(null)
+  const [favorites, setFavorites] = useState<any[]>([])
   const guideline = guidelinesData[guidelineType]
+
+  useEffect(() => {
+    const fetchFavs = async () => {
+      const token = sessionStorage.getItem("auth_token")
+      if (token) {
+        const res = await fetch("http://localhost:8000/api/favorites/", { headers: { 'Authorization': `Bearer ${token}` } })
+        if (res.ok) setFavorites(await res.json())
+      }
+    }
+    fetchFavs()
+  }, [])
 
   const handleArticleClick = (article: GuidelineArticle) => {
     setSelectedArticle(article)
@@ -403,6 +416,30 @@ export function GuidelinesContent({ guidelineType, onBack }: GuidelinesContentPr
     }
   }
 
+  const toggleFavorite = async (article: GuidelineArticle) => {
+    const token = sessionStorage.getItem("auth_token")
+    const existing = favorites.find(f => f.item_id === article.id && f.item_type === `guideline_${guidelineType}`)
+    if (existing) {
+      const res = await fetch(`http://localhost:8000/api/favorites/${existing.id}/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (res.status === 204) setFavorites(favorites.filter(f => f.id !== existing.id))
+    } else {
+      const res = await fetch("http://localhost:8000/api/favorites/", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          title: article.title,
+          item_type: `guideline_${guidelineType}`,
+          item_id: article.id,
+          file_url: ""
+        })
+      })
+      if (res.ok) setFavorites([await res.json(), ...favorites])
+    }
+  }
+
   if (selectedArticle) {
     return (
       <main key={`article-${selectedArticle.id}`} className="flex-1 bg-background p-6 overflow-y-auto animate-in fade-in duration-500">
@@ -423,7 +460,13 @@ export function GuidelinesContent({ guidelineType, onBack }: GuidelinesContentPr
         <Card className="border-0 card-elevated max-w-4xl">
           <CardContent className="pt-8 pb-12 px-8">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-foreground mb-4">{selectedArticle.title}</h1>
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <h1 className="text-3xl font-bold text-foreground">{selectedArticle.title}</h1>
+                <Button size="sm" variant="ghost" onClick={() => toggleFavorite(selectedArticle)} className="shrink-0">
+                  <Star className={`h-5 w-5 ${favorites.some(f => f.item_id === selectedArticle.id && f.item_type === `guideline_${guidelineType}`) ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground hover:text-amber-500'}`} />
+                  <span className="ml-2">Favorite</span>
+                </Button>
+              </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4" />
@@ -530,9 +573,14 @@ export function GuidelinesContent({ guidelineType, onBack }: GuidelinesContentPr
             <CardContent className="p-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-foreground group-hover:text-red transition-colors mb-2">
-                    {article.title}
-                  </h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-lg font-semibold text-foreground group-hover:text-red transition-colors">
+                      {article.title}
+                    </h3>
+                    {favorites.some(f => f.item_id === article.id && f.item_type === `guideline_${guidelineType}`) && (
+                      <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                    )}
+                  </div>
                   <p className="text-muted-foreground mb-4">{article.excerpt}</p>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">

@@ -77,3 +77,18 @@ class TemplateDocument(models.Model):
 
     def __str__(self):
         return f"[{self.get_template_type_display()}] {self.title}"
+
+class FavoriteItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    title = models.CharField(max_length=200)
+    item_type = models.CharField(max_length=50)
+    item_id = models.CharField(max_length=100)
+    file_url = models.URLField(max_length=500, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ('user', 'item_id', 'item_type')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"
